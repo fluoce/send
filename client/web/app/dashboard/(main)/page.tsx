@@ -6,9 +6,8 @@ export default function DashboardHome() {
   const { user } = useFluoceAuth()
 
   return (
-    <h2>
-      Send Fluoce - Dashboard
-      {JSON.stringify(user)}
-    </h2>
+    <div>
+      <div>{user?.name}</div>
+    </div>
   )
 }
