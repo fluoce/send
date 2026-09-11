@@ -7,7 +7,6 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { SelectWorkspace } from "../shared/select-workspace"
-import Link from "next/link"
 import { dashboardRoute } from "@/const/route"
 
 export function DashboardMainSidebar() {
@@ -15,9 +14,9 @@ export function DashboardMainSidebar() {
     <Sidebar>
       <SidebarHeader>
         <SidebarMenuItem className="flex items-center gap-2">
-          <Link href={dashboardRoute.base}>
+          <a href={dashboardRoute.base}>
             <img src="/Send-Fluoce.svg" alt="Logo" className="h-8 w-8" />
-          </Link>
+          </a>
           <SelectWorkspace />
         </SidebarMenuItem>
       </SidebarHeader>
