@@ -3,6 +3,6 @@ export type WorkspaceCreateType = {
 }
 
 export type WorkspaceUpdateType = {
-  name: string
-  status: "ACTIVE" | "DEACTIVE"
+  name?: string
+  status?: "ACTIVE" | "DEACTIVE"
 }

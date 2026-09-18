@@ -2,7 +2,7 @@
 
 import { useFluoceAuth } from "@fluoce/auth-react"
 
-export default function DashboardHome() {
+export default function WorkspaceHomePage() {
   const { user } = useFluoceAuth()
 
   return (

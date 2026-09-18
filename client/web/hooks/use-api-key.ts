@@ -6,6 +6,8 @@ import {
   ApiKeyUpdateType,
 } from "@/types/payload/api-key-payload"
 import { apiKeyQueryKey } from "@/const/query-key"
+import { ResType } from "@/types/res"
+import { ApiKeysDataType, ApiKeyDataType } from "@/types/data/api-key-data"
 
 export function useApiKey({
   apiKeyId,
@@ -15,7 +17,7 @@ export function useApiKey({
   workspaceId: string
 }) {
   const f = useFetch()
-  return useQuery({
+  return useQuery<ResType<ApiKeyDataType>>({
     queryKey: apiKeyQueryKey.apiKey({
       apiKeyId,
     }),
@@ -32,7 +34,7 @@ export function useApiKey({
 
 export function useApiKeys({ workspaceId }: { workspaceId: string }) {
   const f = useFetch()
-  return useQuery({
+  return useQuery<ResType<ApiKeysDataType>>({
     queryKey: apiKeyQueryKey.apiKeys({
       workspaceId,
     }),

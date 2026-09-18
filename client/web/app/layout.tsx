@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils"
 import { Provider } from "@/provider"
 import { ThemeProvider } from "@/components/theme-provider"
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-sans" })
+const inter = Inter({subsets:['latin'],variable:'--font-sans'})
 
 const fontMono = Geist_Mono({
   subsets: ["latin"],
@@ -28,7 +28,7 @@ export default function RootLayout({
         inter.variable
       )}
     >
-      <body>
+      <body className="bg-sidebar">
         <Provider>
           <ThemeProvider>{children}</ThemeProvider>
         </Provider>

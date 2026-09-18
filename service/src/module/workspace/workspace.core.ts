@@ -138,7 +138,6 @@ export class WorkspaceCore {
 
   async getWorkspaces({ userId }: { userId: string }) {
     return await this.queryWorkspacesByStatus({
-      status: 'ACTIVE',
       userId,
     });
   }
@@ -180,20 +179,28 @@ export class WorkspaceCore {
   private async queryWorkspacesByStatus({
     userId,
     status,
-  }: Pick<Workspace, 'userId' | 'status'>) {
+  }: {
+    userId: string;
+    status?: Workspace['status'];
+  }) {
+    const hasStatus = typeof status !== 'undefined';
+
+    const queryInput: any = {
+      TableName: tableName.workspace,
+      KeyConditionExpression: 'userId = :userId',
+      ExpressionAttributeValues: { ':userId': userId },
+    };
+
+    if (hasStatus) {
+      queryInput.FilterExpression = '#status = :status';
+      queryInput.ExpressionAttributeNames = { '#status': 'status' };
+      queryInput.ExpressionAttributeValues[':status'] = status;
+    }
+
     const result = await funcTryCatch<any, null>({
-      func: async () =>
-        await this.dynamoDB.send(
-          new QueryCommand({
-            TableName: tableName.workspace,
-            KeyConditionExpression: 'userId = :userId',
-            FilterExpression: '#status = :status',
-            ExpressionAttributeNames: { '#status': 'status' },
-            ExpressionAttributeValues: { ':userId': userId, ':status': status },
-          }),
-        ),
+      func: async () => await this.dynamoDB.send(new QueryCommand(queryInput)),
       logger: this.logger,
-      action: `getWorkspacesByStatus_${status}_QueryCommand`,
+      action: `getWorkspacesByStatus_${status ?? 'ALL'}_QueryCommand`,
     });
 
     if (!result) {

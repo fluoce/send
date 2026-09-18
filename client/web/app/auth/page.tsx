@@ -1,5 +1,7 @@
 "use client"
 
+import { PageSpinner } from "@/components/shared/loader"
+import { dashboardRoute } from "@/const/route"
 import { FluoceAuthFlow, FluoceAuthProvider } from "@fluoce/auth-react"
 import { useSearchParams } from "next/navigation"
 
@@ -25,8 +27,8 @@ export default function AuthCallback() {
     >
       <FluoceAuthFlow
         code={code}
-        redirect="/"
-        fallback={<div>Verifying credentials, finalizing authorization...</div>}
+        redirect={dashboardRoute.base}
+        fallback={<PageSpinner />}
       />
     </FluoceAuthProvider>
   )

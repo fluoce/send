@@ -14,7 +14,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       on_error={(error) => console.log("Fluoce Auth Error :", error)}
     >
       <FluoceAuthGuard can_redirect={true} fallback={<PageSpinner />}>
-        {children}
+        <div className="flex w-full items-center justify-center">
+          <div className="w-full max-w-220">{children}</div>
+        </div>
       </FluoceAuthGuard>
     </FluoceAuthProvider>
   )

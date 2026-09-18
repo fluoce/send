@@ -63,14 +63,14 @@ export class WorkspaceService {
   }: {
     userId: string;
   }): Promise<ResponseDataType> {
-    const workspace = await this.workspaceCore.getWorkspaces({
+    const workspaces = await this.workspaceCore.getWorkspaces({
       userId,
     });
-    if (!workspace) {
+    if (!workspaces) {
       throw new NotFoundException('Workspace not found');
     }
     return {
-      workspace,
+      workspaces,
       message: 'workspaces fetched successfully',
     };
   }
@@ -80,14 +80,14 @@ export class WorkspaceService {
   }: {
     userId: string;
   }): Promise<ResponseDataType> {
-    const workspace = await this.workspaceCore.getTrashWorkspaces({
+    const workspaces = await this.workspaceCore.getTrashWorkspaces({
       userId,
     });
-    if (!workspace) {
+    if (!workspaces) {
       throw new NotFoundException('Workspace not found');
     }
     return {
-      workspace,
+      workspaces,
       message: 'Trash workspaces fetched successfully',
     };
   }

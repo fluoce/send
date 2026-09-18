@@ -6,22 +6,19 @@ import {
 } from "@/types/payload/workspace-payload"
 import { workspaceEndpoint } from "@/const/endpoint"
 import { workspaceQueryKey } from "@/const/query-key"
-
-export function useWorkspaces() {
-  const f = useFetch()
-  return useQuery({
-    queryKey: workspaceQueryKey.workspaces,
-    queryFn: () =>
-      f({
-        endpoint: workspaceEndpoint.getAll,
-        method: "GET",
-      }),
-  })
-}
+import { ResType } from "@/types/res"
+import {
+  WorkspaceDataType,
+  WorkspacesDataType,
+} from "@/types/data/workspace-data"
+import useLocalStorage from "./use-local-storage"
+import { localStorageKey } from "@/const/local-storage-key"
+import { useRouter } from "next/navigation"
+import { dashboardRoute } from "@/const/route"
 
 export function useWorkspace({ workspaceId }: { workspaceId: string }) {
   const f = useFetch()
-  return useQuery({
+  return useQuery<ResType<WorkspaceDataType>>({
     queryKey: workspaceQueryKey.workspace({
       workspaceId,
     }),
@@ -30,6 +27,18 @@ export function useWorkspace({ workspaceId }: { workspaceId: string }) {
         endpoint: workspaceEndpoint.get({
           workspaceId,
         }),
+        method: "GET",
+      }),
+  })
+}
+
+export function useWorkspaces() {
+  const f = useFetch()
+  return useQuery<ResType<WorkspacesDataType>>({
+    queryKey: workspaceQueryKey.workspaces,
+    queryFn: () =>
+      f({
+        endpoint: workspaceEndpoint.getAll,
         method: "GET",
       }),
   })
@@ -71,9 +80,14 @@ export function useWorkspaceUpdate() {
         method: "PATCH",
         body,
       }),
-    onSuccess: () => {
+    onSuccess: (_, { workspaceId }) => {
       q.invalidateQueries({
         queryKey: workspaceQueryKey.workspaces,
+      })
+      q.invalidateQueries({
+        queryKey: workspaceQueryKey.workspace({
+          workspaceId,
+        }),
       })
     },
   })
@@ -82,6 +96,10 @@ export function useWorkspaceUpdate() {
 export function useWorkspaceDelete() {
   const q = useQueryClient()
   const f = useFetch()
+  const { removeValue } = useLocalStorage({
+    key: localStorageKey.selectedWorkspace,
+  })
+  const router = useRouter()
   return useMutation({
     mutationFn: ({ workspaceId }: { workspaceId: string }) =>
       f({
@@ -94,6 +112,8 @@ export function useWorkspaceDelete() {
       q.invalidateQueries({
         queryKey: workspaceQueryKey.workspaces,
       })
+      removeValue()
+      router.replace(dashboardRoute.base)
     },
   })
 }
