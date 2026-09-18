@@ -1,9 +1,11 @@
+export type ApiKeyStatusType = "ACTIVE" | "DEACTIVE" | "SUSPEND"
+
 export type ApiKeyType = {
   id: string
   workspaceId: string
   name: string
   key: string
-  status: "ACTIVE" | "DEACTIVE" | "SUSPEND"
+  status: ApiKeyStatusType
   expireAt: string
   createAt: string
   updatedAt: string
@@ -16,3 +18,5 @@ export type ApiKeyDataType = {
 export type ApiKeysDataType = {
   apiKeys: ApiKeyType[]
 }
+
+export const ApiKeyStatus: ApiKeyStatusType[] = ["ACTIVE", "DEACTIVE"]

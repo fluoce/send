@@ -29,6 +29,7 @@ export function CreateUpdateWorkspace({
   workspace?: WorkspaceType
 }) {
   const router = useRouter()
+
   const [open, setOpen] = useState(false)
 
   const {

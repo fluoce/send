@@ -13,7 +13,7 @@ export const workspaceEndpoint = {
 }
 
 const apiKeyBase = ({ workspaceId }: { workspaceId: string }) =>
-  `workspace/${workspaceId}/api-key`
+  `/workspace/${workspaceId}/api-key`
 
 export const apiKeyEndpoint = {
   get: ({ workspaceId, apiKeyId }: { workspaceId: string; apiKeyId: string }) =>

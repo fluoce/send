@@ -8,11 +8,11 @@ export default function DashboardMainLyaout({
   children: ReactNode
 }) {
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex h-full flex-col gap-8">
       <AppTopbar />
-      <div className="flex items-start gap-4">
+      <div className="flex h-full items-start justify-center">
         <AppSidebar />
-        <div className="px-2">{children}</div>
+        <div className="flex-1 overflow-x-auto border-l px-4">{children}</div>
       </div>
     </div>
   )

@@ -11,6 +11,7 @@ export function TanstackProvider({ children }: { children: ReactNode }) {
           queries: {
             staleTime: 5 * 60 * 1000,
             refetchOnMount: false,
+
             retry: 1,
           },
           mutations: {

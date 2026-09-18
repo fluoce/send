@@ -16,3 +16,5 @@ export type WorkspaceDataType = {
 export type WorkspacesDataType = {
   workspaces: WorkspaceType[]
 }
+
+export const WorksapceStatus: WorkspaceStatusType[] = ["ACTIVE", "DEACTIVE"]

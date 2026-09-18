@@ -18,10 +18,13 @@ export function PageHeader({
       <div className="flex flex-col">
         <div className="flex items-center gap-2 text-lg font-medium opacity-80 sm:text-xl">
           {icon}
-          <h1>{title}</h1>
+          <h1 title={title}>{title}</h1>
         </div>
         {description && (
-          <span className="text-xs text-muted-foreground sm:text-sm">
+          <span
+            title={description}
+            className="line-clamp-2 text-xs text-muted-foreground sm:text-sm"
+          >
             {description}
           </span>
         )}

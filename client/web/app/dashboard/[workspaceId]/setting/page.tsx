@@ -1,19 +1,10 @@
 "use client"
 
 import { CreateUpdateWorkspace } from "@/components/form/create-update-workspace"
+import { DeleteWorkspace } from "@/components/form/delete-workpsace"
 import { PageSpinner } from "@/components/shared/loader"
 import { PageHeader } from "@/components/shared/page-header"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+import { PageWrapper } from "@/components/shared/page-wrapper"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import {
@@ -23,18 +14,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Spinner } from "@/components/ui/spinner"
-import {
-  useWorkspace,
-  useWorkspaceDelete,
-  useWorkspaceUpdate,
-} from "@/hooks/use-workspace"
+import { useWorkspace, useWorkspaceUpdate } from "@/hooks/use-workspace"
 import { useWorkspaceId } from "@/hooks/use-workspace-id"
-import { WorkspaceStatusType } from "@/types/data/workspace-data"
+import {
+  WorksapceStatus,
+  WorkspaceStatusType,
+} from "@/types/data/workspace-data"
 import { cn } from "cn"
-import { Edit, Trash2 } from "lucide-react"
-
-const WORKSPACE_STATUS: WorkspaceStatusType[] = ["ACTIVE", "DEACTIVE"]
+import { Edit } from "lucide-react"
 
 export default function WorkspaceSetting() {
   const workspaceId = useWorkspaceId()
@@ -45,10 +32,6 @@ export default function WorkspaceSetting() {
 
   const u = useWorkspaceUpdate()
 
-  const d = useWorkspaceDelete()
-
-  const isPending = u.isPending || d.isPending
-
   const workspace = data?.data?.workspace
 
   if (isLoading) {
@@ -56,7 +39,7 @@ export default function WorkspaceSetting() {
   }
 
   return workspace ? (
-    <div className="flex flex-col gap-4">
+    <PageWrapper>
       <PageHeader
         title="Workspace"
         description={`Manage settings for your workspace.`}
@@ -74,7 +57,7 @@ export default function WorkspaceSetting() {
               <Button
                 variant="ghost"
                 size="icon"
-                disabled={isPending}
+                disabled={u.isPending}
                 className="text-blue-500"
               >
                 <Edit />
@@ -85,7 +68,7 @@ export default function WorkspaceSetting() {
         <div>
           <Span text="Status" />
           <Select
-            disabled={isPending}
+            disabled={u.isPending}
             defaultValue={workspace?.status}
             onValueChange={(v: WorkspaceStatusType) => {
               u.mutateAsync({
@@ -100,7 +83,7 @@ export default function WorkspaceSetting() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {WORKSPACE_STATUS?.map((s) => (
+              {WorksapceStatus?.map((s) => (
                 <SelectItem value={s} key={s}>
                   {s}
                 </SelectItem>
@@ -114,45 +97,18 @@ export default function WorkspaceSetting() {
             Permanently deleting this workspace will remove all things
             associated with it.
           </p>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                variant="destructive"
-                className="mt-2"
-                disabled={isPending}
-              >
-                {d.isPending ? <Spinner /> : <Trash2 />} Delete
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>
-                  Delete Workspace "{workspace?.name}"?
-                </AlertDialogTitle>
-                <AlertDialogDescription>
-                  Are you sure you want to permanently delete this workspace?
-                  This action cannot be undone. All things related to this
-                  workspace will be permanently removed.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={() =>
-                    d.mutateAsync({
-                      workspaceId: workspace?.id!,
-                    })
-                  }
-                  variant="destructive"
-                >
-                  Delete
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <DeleteWorkspace workspace={workspace}>
+            <Button
+              variant="destructive"
+              className="mt-2"
+              disabled={u.isPending}
+            >
+              Delete
+            </Button>
+          </DeleteWorkspace>
         </div>
       </div>
-    </div>
+    </PageWrapper>
   ) : null
 }
 

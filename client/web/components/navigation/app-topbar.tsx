@@ -6,7 +6,7 @@ import { SelectWorkspace } from "../shared/select-workspace"
 
 export function AppTopbar() {
   return (
-    <nav className="sticky top-0 z-20 flex h-12 items-center justify-between gap-2 bg-sidebar p-2">
+    <nav className="sticky top-0 z-20 flex h-14 items-center justify-between gap-2 bg-sidebar p-2">
       <div className="flex flex-wrap items-start">
         <a href={dashboardRoute.base} className="flex items-center gap-1">
           <img src="/Send-Fluoce.svg" alt="form-fluoce" className="h-8 w-8" />

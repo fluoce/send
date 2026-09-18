@@ -29,7 +29,7 @@ export function CreateUpdateApiKey({
   children,
 }: {
   children: ReactNode
-  apiKey: ApiKeyType
+  apiKey?: ApiKeyType
 }) {
   const [open, setOpen] = useState(false)
 
@@ -40,6 +40,7 @@ export function CreateUpdateApiKey({
     handleSubmit,
     reset,
     formState: { errors },
+    setError,
     control,
   } = useForm<
     ApiKeyCreateType & {
@@ -66,6 +67,13 @@ export function CreateUpdateApiKey({
 
   function submit(body: ApiKeyUpdateType) {
     if (apiKey) {
+      if (apiKey?.name === body?.name && apiKey?.expireAt === body?.expireAt) {
+        setError("name", {
+          message: "No any change to update",
+        })
+        return
+      }
+
       u.mutateAsync({
         apiKeyId: apiKey?.id,
         body,
@@ -74,12 +82,19 @@ export function CreateUpdateApiKey({
         setOpen(false)
       })
     } else {
+      if (!body.name) {
+        setError("name", {
+          message: "Api key name is required",
+        })
+      }
       c.mutateAsync({
         body: {
           name: body?.name!,
           expireAt: body.expireAt,
         },
         workspaceId,
+      }).then(() => {
+        setOpen(false)
       })
     }
   }
@@ -97,27 +112,35 @@ export function CreateUpdateApiKey({
               : "Create a new API key by filling out the details below."}
           </FieldDescription>
         </div>
-        <Input
-          autoFocus
-          className="h-10"
-          id="create-api-key"
-          placeholder="Api key name . . . "
-          {...register("name", {
-            required: "Api key name is required.",
-          })}
-        />
-        <Controller
-          control={control}
-          name="expireAt"
-          render={({ field: { onChange, value } }) => (
-            <DatePicker
-              date={value ? new Date(value) : new Date()}
-              setDate={(date) => {
-                onChange(date)
-              }}
-            />
-          )}
-        />
+        <Field>
+          <FieldLabel htmlFor="key-name">Key Name</FieldLabel>
+          <Input
+            autoFocus
+            className="h-10"
+            id="key-name"
+            placeholder="Api key name . . . "
+            {...register("name", {
+              required: "Api key name is required.",
+            })}
+          />
+        </Field>
+        <Field>
+          <FieldLabel htmlFor="key-expireat">Expire At</FieldLabel>
+          <Controller
+            control={control}
+            name="expireAt"
+            render={({ field: { onChange, value } }) => (
+              <DatePicker
+                className="h-10"
+                date={value ? new Date(value) : ""}
+                setDate={(date) => {
+                  onChange(date)
+                }}
+                disabledDate={new Date()}
+              />
+            )}
+          />
+        </Field>
         <Button className="h-10" disabled={c.isPending || u.isPending}>
           {(c.isPending || u.isPending) && <Spinner />}{" "}
           {apiKey ? "Update" : "Create"}
