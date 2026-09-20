@@ -1,7 +1,7 @@
 "use client"
 
-import { ApiKeyColumns } from "@/components/columns/api-key-columns"
-import { CreateUpdateApiKey } from "@/components/form/create-update-api-key"
+import { DomainColumns } from "@/components/columns/domain-columns"
+import { CreateUpdateDomain } from "@/components/form/create-update-domain"
 import { PageSpinner } from "@/components/shared/loader"
 import { PageHeader } from "@/components/shared/page-header"
 import { PageWrapper } from "@/components/shared/page-wrapper"
@@ -11,17 +11,15 @@ import { Nodata } from "@/components/ui/no-data"
 import { externalRoute } from "@/const/route"
 import { useApiKeys } from "@/hooks/use-api-key"
 import { useWorkspaceId } from "@/hooks/use-workspace-id"
-import { ArrowUpRight, Key, Plus } from "lucide-react"
+import { ArrowUpRight, Globe, Plus } from "lucide-react"
 import Link from "next/link"
 
-export default function ApikeyPage() {
+export default function DomainPage() {
   const workspaceId = useWorkspaceId()
 
   const { data, isLoading } = useApiKeys({
     workspaceId,
   })
-
-  console.log(data?.data.apiKeys)
 
   if (isLoading) {
     return <PageSpinner />
@@ -31,18 +29,18 @@ export default function ApikeyPage() {
     <PageWrapper>
       <div className="flex items-center justify-between gap-4">
         <PageHeader
-          title="API Keys"
-          description="Manage your workspace's API keys."
+          title="Domain"
+          description="Manage your workspace's Domains."
         />
-        <CreateUpdateApiKey>
+        <CreateUpdateDomain>
           <Button>
-            <Plus /> API Key
+            <Plus /> Domain
           </Button>
-        </CreateUpdateApiKey>
+        </CreateUpdateDomain>
       </div>
-      {data?.data?.apiKeys?.length ? (
+      {!data?.data?.apiKeys?.length ? (
         <DataTable
-          columns={ApiKeyColumns}
+          columns={DomainColumns}
           data={(data?.data?.apiKeys || []).map((apiKey) => ({
             ...apiKey,
             action: null,
@@ -50,20 +48,20 @@ export default function ApikeyPage() {
         />
       ) : (
         <Nodata
-          icon={<Key />}
-          title="Create API key"
-          description="let's create your first api key"
+          icon={<Globe />}
+          title="Add Domain"
+          description="let's add your first Domain"
         >
           <Link href={externalRoute.sendDocs} tabIndex={-1}>
             <Button variant="secondary">
               <ArrowUpRight /> Documentation
             </Button>
           </Link>
-          <CreateUpdateApiKey>
+          <CreateUpdateDomain>
             <Button>
-              <Plus /> Create New
+              <Plus /> Add New
             </Button>
-          </CreateUpdateApiKey>
+          </CreateUpdateDomain>
         </Nodata>
       )}
     </PageWrapper>

@@ -39,7 +39,7 @@ const columnHelper = createColumnHelper<
   }
 >()
 
-export const ApiKeyColumns = columnHelper.columns([
+export const DomainColumns = columnHelper.columns([
   columnHelper.accessor("name", {
     header: "Name",
     cell: (info) => funcTrunc(info.getValue(), 16),

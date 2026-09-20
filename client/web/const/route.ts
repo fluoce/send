@@ -9,8 +9,11 @@ export const dashboardRoute = {
     `${base}/${worksapceId}/setting`,
   apiKey: ({ workspaceId }: { workspaceId: string }) =>
     `${base}/${workspaceId}/api-key`,
+  domain: ({ workspaceId }: { workspaceId: string }) =>
+    `${base}/${workspaceId}/domain`,
 }
 
 export const externalRoute = {
   fluoce: "https://fluoce.com",
+  sendDocs: "/docs",
 }

@@ -69,7 +69,7 @@ export function SelectWorkspace({
                 })
               )
             }}
-            className="justify-between"
+            className="justify-between px-4 py-2"
           >
             <div className="flex items-center gap-2">
               <span className="truncate">{selectedWorkspace?.name}</span>
@@ -93,6 +93,7 @@ export function SelectWorkspace({
             ?.filter((ws) => ws.id != selectedWorkspace?.id)
             ?.map((ws) => (
               <DropdownMenuItem
+                className="px-4 py-2"
                 key={ws?.id}
                 onClick={() => {
                   setValue(ws?.id)
@@ -116,7 +117,7 @@ export function SelectWorkspace({
             children={
               <DropdownMenuItem
                 onSelect={(e) => e.preventDefault()}
-                className="text-blue-600"
+                className="px-4 py-2 text-blue-600"
               >
                 <Plus /> Create Workspace
               </DropdownMenuItem>
