@@ -1,8 +1,22 @@
 "use client"
 
 import { createColumnHelper } from "@tanstack/react-table"
-import { type DataTableFeatures } from "@/types/common/data-table-features"
-import { ApiKeyStatus, ApiKeyType } from "@/types/data/api-key-data"
+import {
+  DomainStatus,
+  DomainStatusType,
+  DomainType,
+} from "@/types/data/domain-data"
+import { Button } from "../ui/button"
+import {
+  Ban,
+  CircleCheck,
+  EllipsisVertical,
+  Repeat2,
+  Trash2,
+} from "lucide-react"
+import { funcTrunc } from "@/func/func-trunc"
+import { DeleteDomain } from "../form/delete-domain"
+import { DataTableFeatures } from "@/types/common/data-table-features"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,131 +26,110 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu"
-import { Button } from "../ui/button"
-import {
-  Ban,
-  CheckCheck,
-  CircleCheck,
-  Copy,
-  Edit,
-  EllipsisVertical,
-  Info,
-  Trash2,
-} from "lucide-react"
-import { funcDate } from "@/func/func-date"
-import { funcTrunc } from "@/func/func-trunc"
-import { useCopy } from "@/hooks/use-copy"
-import { CreateUpdateApiKey } from "../form/create-update-api-key"
-import { useApiKeyUpdate } from "@/hooks/use-api-key"
+import { useDomainUpdate } from "@/hooks/use-domain"
 import { useWorkspaceId } from "@/hooks/use-workspace-id"
 import { Spinner } from "../ui/spinner"
-import { DeleteApiKey } from "../form/delete-api-key"
 
 const columnHelper = createColumnHelper<
   DataTableFeatures,
-  ApiKeyType & {
-    action: any
+  DomainType & {
+    action?: any
   }
 >()
 
 export const DomainColumns = columnHelper.columns([
-  columnHelper.accessor("name", {
-    header: "Name",
-    cell: (info) => funcTrunc(info.getValue(), 16),
-  }),
-  columnHelper.accessor("key", {
-    header: "Key",
-    cell: (info) => {
-      const { copy, showCopiedSuccess } = useCopy({
-        text: info.getValue(),
-      })
-
-      return (
-        <div className="flex items-center gap-1">
-          {funcTrunc(info.getValue(), 8)}
-          <Button
-            onClick={() => copy()}
-            variant="secondary"
-            size="icon-sm"
-            className="text-muted-foreground"
-          >
-            {showCopiedSuccess ? <CheckCheck /> : <Copy />}
-          </Button>
-        </div>
-      )
-    },
+  columnHelper.accessor("domain", {
+    header: "Domain",
+    cell: (info) => funcTrunc(info.getValue(), 32),
   }),
   columnHelper.accessor("status", {
     header: "Status",
     cell: (info) => {
-      const status = info.getValue()
+      const status = info.getValue() as DomainStatusType
       let colorClass = ""
-      if (status === "DEACTIVE") {
+      if (status === "PENDING") {
         colorClass = "text-yellow-500"
-      } else if (status === "SUSPEND") {
+      } else if (status === "FAILED" || status === "DISABLED") {
         colorClass = "text-red-500"
+      } else if (status === "VERIFIED") {
+        colorClass = "text-green-500"
       }
-      return <span className={colorClass}>{status}</span>
-    },
-  }),
-  columnHelper.accessor("expireAt", {
-    header: "Expires At",
-    cell: (info) => {
-      const date = info.getValue()
-      return date ? funcDate(date) : "~"
+      return (
+        <div className="flex items-center gap-2">
+          <span className={colorClass}>{status}</span>
+          {status !== "VERIFIED" && status !== "DISABLED" && (
+            <Button variant="secondary" size="sm" className="text-blue-500">
+              <Repeat2 /> verify
+            </Button>
+          )}
+        </div>
+      )
     },
   }),
   columnHelper.accessor("action", {
     header: "Action",
     cell: (info) => {
       const workspaceId = useWorkspaceId()
-      const { mutateAsync, isPending } = useApiKeyUpdate()
-      const apiKey = info?.row?.original
+      const domain = info?.row?.original
+      const u = useDomainUpdate()
       return (
         <DropdownMenu>
-          <DropdownMenuTrigger disabled={isPending} asChild>
+          <DropdownMenuTrigger asChild disabled={u.isPending}>
             <Button variant="ghost" size="icon">
-              {isPending ? <Spinner /> : <EllipsisVertical />}
+              {u.isPending ? <Spinner /> : <EllipsisVertical />}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            <CreateUpdateApiKey apiKey={apiKey}>
-              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                <Edit /> Edit
-              </DropdownMenuItem>
-            </CreateUpdateApiKey>
-            <DropdownMenuSub>
-              <DropdownMenuSubTrigger>
-                {apiKey?.status == "ACTIVE" ? <CircleCheck /> : <Ban />}{" "}
-                {apiKey?.status}
-              </DropdownMenuSubTrigger>
-              <DropdownMenuSubContent>
-                {ApiKeyStatus?.filter((s) => apiKey?.status !== s).map((s) => (
-                  <DropdownMenuItem
-                    key={s}
-                    onClick={() =>
-                      mutateAsync({
-                        body: {
-                          status: s,
-                        },
-                        apiKeyId: apiKey.id,
-                        workspaceId,
-                      })
-                    }
-                  >
-                    {s}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuSubContent>
-            </DropdownMenuSub>
-            <DeleteApiKey apiKey={apiKey}>
+            {(domain.status == "VERIFIED" || domain.status == "DISABLED") && (
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  {domain?.status == "VERIFIED" ? <CircleCheck /> : <Ban />}
+                  {domain?.status == "VERIFIED" ? "ENABLED" : domain.status}
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent>
+                  {domain.status === "VERIFIED" && (
+                    <DropdownMenuItem
+                      onClick={() =>
+                        u.mutateAsync({
+                          body: {
+                            status: "DISABLED",
+                          },
+                          workspaceId,
+                          domainId: domain.id,
+                        })
+                      }
+                      key="DISABLED"
+                    >
+                      DISABLED
+                    </DropdownMenuItem>
+                  )}
+                  {domain.status === "DISABLED" && (
+                    <DropdownMenuItem
+                      onClick={() =>
+                        u.mutateAsync({
+                          body: {
+                            status: "VERIFIED",
+                          },
+                          workspaceId,
+                          domainId: domain.id,
+                        })
+                      }
+                      key="ENABLED"
+                    >
+                      ENABLED
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
+            )}
+            <DeleteDomain domainId={domain.id}>
               <DropdownMenuItem
                 variant="destructive"
                 onSelect={(e) => e.preventDefault()}
               >
                 <Trash2 /> Delete
               </DropdownMenuItem>
-            </DeleteApiKey>
+            </DeleteDomain>
           </DropdownMenuContent>
         </DropdownMenu>
       )

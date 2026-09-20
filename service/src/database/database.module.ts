@@ -2,6 +2,7 @@ import { Global, Module } from '@nestjs/common';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 import { database } from 'src/config/database';
+import { env } from 'src/config/env';
 
 @Global()
 @Module({
@@ -10,10 +11,10 @@ import { database } from 'src/config/database';
       provide: database.dynamoDB,
       useFactory: () => {
         const client = new DynamoDBClient({
-          region: process.env.AWS_REGION,
+          region: env().aws.region,
           credentials: {
-            accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+            accessKeyId: env().aws.accessKeyId,
+            secretAccessKey: env().aws.secretAccessKey,
           },
         });
         return DynamoDBDocumentClient.from(client);

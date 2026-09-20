@@ -37,3 +37,29 @@ export const apiKeyEndpoint = {
     apiKeyId: string
   }) => `${apiKeyBase({ workspaceId })}/${apiKeyId}`,
 }
+
+const domainBase = ({ workspaceId }: { workspaceId: string }) =>
+  `/workspace/${workspaceId}/domain`
+
+export const domainEndpoint = {
+  get: ({ workspaceId, domainId }: { workspaceId: string; domainId: string }) =>
+    `${domainBase({ workspaceId })}/${domainId}`,
+  getAll: ({ workspaceId }: { workspaceId: string }) =>
+    domainBase({ workspaceId }),
+  create: ({ workspaceId }: { workspaceId: string }) =>
+    domainBase({ workspaceId }),
+  update: ({
+    workspaceId,
+    domainId,
+  }: {
+    workspaceId: string
+    domainId: string
+  }) => `${domainBase({ workspaceId })}/${domainId}`,
+  delete: ({
+    workspaceId,
+    domainId,
+  }: {
+    workspaceId: string
+    domainId: string
+  }) => `${domainBase({ workspaceId })}/${domainId}`,
+}

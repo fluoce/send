@@ -9,6 +9,7 @@ import {
   DynamoDBDocumentClient,
   PutCommandOutput,
   GetCommandOutput,
+  QueryCommandOutput,
 } from '@aws-sdk/lib-dynamodb';
 import {
   BadRequestException,
@@ -45,7 +46,7 @@ export class ApiKeyCore {
       name,
       key,
       status: 'ACTIVE',
-      createAt: now,
+      createdAt: now,
       updatedAt: now,
       expireAt,
     };
@@ -160,7 +161,7 @@ export class ApiKeyCore {
   }
 
   async getApiKeys({ workspaceId }: { workspaceId: string }) {
-    const result = await funcTryCatch<any, null>({
+    const result = await funcTryCatch<QueryCommandOutput, null>({
       func: async () =>
         await this.dynamoDB.send(
           new QueryCommand({
@@ -181,7 +182,7 @@ export class ApiKeyCore {
   }
 
   async getApiKeyByKey({ key }: { key: string }) {
-    const result = await funcTryCatch<any, null>({
+    const result = await funcTryCatch<QueryCommandOutput, null>({
       func: async () =>
         await this.dynamoDB.send(
           new QueryCommand({

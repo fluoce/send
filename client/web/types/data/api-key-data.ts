@@ -7,7 +7,7 @@ export type ApiKeyType = {
   key: string
   status: ApiKeyStatusType
   expireAt: string
-  createAt: string
+  createdAt: string
   updatedAt: string
 }
 

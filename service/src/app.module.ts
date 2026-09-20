@@ -10,6 +10,7 @@ import { EmailModule } from './module/email/email.module';
 import { SmsModule } from './module/sms/sms.module';
 import { DatabaseModule } from './database/database.module';
 import { WorkspaceModule } from './module/workspace/workspace.module';
+import { DomainModule } from './module/domain/domain.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { WorkspaceModule } from './module/workspace/workspace.module';
     SmsModule,
     DatabaseModule,
     WorkspaceModule,
+    DomainModule,
   ],
   controllers: [AppController],
   providers: [

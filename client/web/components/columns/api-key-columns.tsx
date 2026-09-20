@@ -20,7 +20,6 @@ import {
   Copy,
   Edit,
   EllipsisVertical,
-  Info,
   Trash2,
 } from "lucide-react"
 import { funcDate } from "@/func/func-date"
@@ -107,7 +106,7 @@ export const ApiKeyColumns = columnHelper.columns([
             </CreateUpdateApiKey>
             <DropdownMenuSub>
               <DropdownMenuSubTrigger>
-                {apiKey?.status == "ACTIVE" ? <CircleCheck /> : <Ban />}{" "}
+                {apiKey?.status == "ACTIVE" ? <CircleCheck /> : <Ban />}
                 {apiKey?.status}
               </DropdownMenuSubTrigger>
               <DropdownMenuSubContent>

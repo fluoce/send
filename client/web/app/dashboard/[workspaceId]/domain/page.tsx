@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { DataTable } from "@/components/ui/data-table"
 import { Nodata } from "@/components/ui/no-data"
 import { externalRoute } from "@/const/route"
-import { useApiKeys } from "@/hooks/use-api-key"
+import { useDomains } from "@/hooks/use-domain"
 import { useWorkspaceId } from "@/hooks/use-workspace-id"
 import { ArrowUpRight, Globe, Plus } from "lucide-react"
 import Link from "next/link"
@@ -17,7 +17,7 @@ import Link from "next/link"
 export default function DomainPage() {
   const workspaceId = useWorkspaceId()
 
-  const { data, isLoading } = useApiKeys({
+  const { data, isLoading } = useDomains({
     workspaceId,
   })
 
@@ -38,11 +38,11 @@ export default function DomainPage() {
           </Button>
         </CreateUpdateDomain>
       </div>
-      {!data?.data?.apiKeys?.length ? (
+      {data?.data?.domains?.length ? (
         <DataTable
           columns={DomainColumns}
-          data={(data?.data?.apiKeys || []).map((apiKey) => ({
-            ...apiKey,
+          data={(data?.data?.domains || []).map((domain) => ({
+            ...domain,
             action: null,
           }))}
         />

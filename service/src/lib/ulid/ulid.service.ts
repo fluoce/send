@@ -20,4 +20,8 @@ export class UlidService {
   apiKeyId(): string {
     return `${idPrefix.apiKey}_${ulid()}`;
   }
+
+  domainId(): string {
+    return `${idPrefix.domain}_${ulid()}`;
+  }
 }

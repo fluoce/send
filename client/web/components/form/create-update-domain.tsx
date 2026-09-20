@@ -1,7 +1,6 @@
 "use client"
 
-import { ApiKeyType } from "@/types/data/api-key-data"
-import { ReactNode, useEffect, useState } from "react"
+import { ReactNode, useState } from "react"
 import {
   Dialog,
   DialogContent,
@@ -10,29 +9,19 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog"
-import { Controller, useForm } from "react-hook-form"
-import {
-  ApiKeyCreateType,
-  ApiKeyUpdateType,
-} from "@/types/payload/api-key-payload"
-import { useApiKeyCreate, useApiKeyUpdate } from "@/hooks/use-api-key"
+import { useForm } from "react-hook-form"
+import { useDomainCreate } from "@/hooks/use-domain"
 import { Field, FieldDescription, FieldLabel } from "../ui/field"
 import { Button } from "../ui/button"
 import { Spinner } from "../ui/spinner"
 import { ErrorAlert } from "../shared/error-alert"
 import { Input } from "../ui/input"
-import { DatePicker } from "../ui/date-picker"
 import { useWorkspaceId } from "@/hooks/use-workspace-id"
+import { DomainCreateType } from "@/types/payload/domain-payload"
+import { domainRegex } from "@/const/regex"
 
-export function CreateUpdateDomain({
-  apiKey,
-  children,
-}: {
-  children: ReactNode
-  apiKey?: ApiKeyType
-}) {
+export function CreateUpdateDomain({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false)
-
   const workspaceId = useWorkspaceId()
 
   const {
@@ -41,113 +30,66 @@ export function CreateUpdateDomain({
     reset,
     formState: { errors },
     setError,
-    control,
-  } = useForm<
-    ApiKeyCreateType & {
-      status?: ApiKeyUpdateType["status"]
-    }
-  >({
+  } = useForm<DomainCreateType>({
     defaultValues: {
-      expireAt: apiKey?.expireAt || "",
-      name: apiKey?.name || "",
-      status: apiKey?.status || "ACTIVE",
+      domain: "",
     },
   })
 
-  useEffect(() => {
-    reset({
-      name: apiKey?.name || "",
-      expireAt: apiKey?.expireAt || "",
-      status: apiKey?.status || "ACTIVE",
-    })
-  }, [apiKey, open, reset])
+  const c = useDomainCreate()
 
-  const c = useApiKeyCreate()
-  const u = useApiKeyUpdate()
-
-  function submit(body: ApiKeyUpdateType) {
-    if (apiKey) {
-      if (apiKey?.name === body?.name && apiKey?.expireAt === body?.expireAt) {
-        setError("name", {
-          message: "No any change to update",
-        })
-        return
-      }
-
-      u.mutateAsync({
-        apiKeyId: apiKey?.id,
-        body,
-        workspaceId: apiKey.workspaceId,
-      }).then(() => {
-        setOpen(false)
+  function submit(body: DomainCreateType) {
+    if (!body.domain) {
+      setError("domain", {
+        message: "Domain is required.",
       })
-    } else {
-      if (!body.name) {
-        setError("name", {
-          message: "Api key name is required",
-        })
-      }
-      c.mutateAsync({
-        body: {
-          name: body?.name!,
-          expireAt: body.expireAt,
-        },
-        workspaceId,
-      }).then(() => {
-        setOpen(false)
-      })
+      return
     }
+    if (!domainRegex.test(body.domain)) {
+      setError("domain", {
+        message: "Enter a valid domain.",
+      })
+      return
+    }
+    c.mutateAsync({
+      body: {
+        domain: body.domain,
+      },
+      workspaceId,
+    }).then(() => {
+      setOpen(false)
+      reset()
+    })
   }
 
   const Form = () => (
     <form onSubmit={handleSubmit(submit)}>
       <Field className="flex flex-col gap-4">
         <div>
-          <FieldLabel htmlFor="create-api-key" className="text-base">
-            {apiKey ? "Update Api key" : "Create Api key"}
+          <FieldLabel htmlFor="create-domain" className="text-base">
+            Add Domain
           </FieldLabel>
           <FieldDescription>
-            {apiKey
-              ? "Update your API key details below."
-              : "Create a new API key by filling out the details below."}
+            Add a new domain to your workspace.
           </FieldDescription>
         </div>
         <Field>
-          <FieldLabel htmlFor="key-name">Key Name</FieldLabel>
+          <FieldLabel htmlFor="domain">Domain</FieldLabel>
           <Input
             autoFocus
             className="h-10"
-            id="key-name"
-            placeholder="Api key name . . . "
-            {...register("name", {
-              required: "Api key name is required.",
+            id="domain"
+            placeholder="example.com"
+            {...register("domain", {
+              required: "Domain is required.",
             })}
           />
         </Field>
-        <Field>
-          <FieldLabel htmlFor="key-expireat">Expire At</FieldLabel>
-          <Controller
-            control={control}
-            name="expireAt"
-            render={({ field: { onChange, value } }) => (
-              <DatePicker
-                className="h-10"
-                date={value ? new Date(value) : ""}
-                setDate={(date) => {
-                  onChange(date)
-                }}
-                disabledDate={new Date()}
-              />
-            )}
-          />
-        </Field>
-        <Button className="h-10" disabled={c.isPending || u.isPending}>
-          {(c.isPending || u.isPending) && <Spinner />}{" "}
-          {apiKey ? "Update" : "Create"}
+        <Button className="h-10" disabled={c.isPending}>
+          {c.isPending && <Spinner />} Create
         </Button>
-        {errors?.name && <ErrorAlert error={errors?.name?.message!} />}
+        {errors?.domain && <ErrorAlert error={errors?.domain?.message!} />}
         {c.isError && <ErrorAlert error={c.error?.message} />}
-        {u.isError && <ErrorAlert error={u.error?.message} />}
       </Field>
     </form>
   )
@@ -159,9 +101,7 @@ export function CreateUpdateDomain({
         setOpen(open)
         if (open) {
           reset({
-            name: apiKey?.name || "",
-            expireAt: apiKey?.expireAt || "",
-            status: apiKey?.status || "ACTIVE",
+            domain: "",
           })
         }
       }}

@@ -14,3 +14,11 @@ export const apiKeyQueryKey = {
   ],
   apiKey: ({ apiKeyId }: { apiKeyId: string }) => ["apiKey", `${apiKeyId}`],
 }
+
+export const domainQueryKey = {
+  domains: ({ workspaceId }: { workspaceId: string }) => [
+    "domains",
+    `${workspaceId}`,
+  ],
+  domain: ({ domainId }: { domainId: string }) => ["domain", `${domainId}`],
+}

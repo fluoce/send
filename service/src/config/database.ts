@@ -5,6 +5,8 @@ export const database = {
 export const tableName = {
   workspace: 'send_workspace',
   apiKey: 'send_api_key',
+  domain: 'send_domain',
+  verifiedDomain: 'send_verified_domain',
 };
 
 export interface Workspace {
@@ -25,4 +27,28 @@ export interface ApiKey {
   createAt: string;
   updatedAt: string;
   expireAt: string;
+}
+
+export interface DnsRecord {
+  type: 'CNAME' | 'TXT' | 'MX';
+  name: string;
+  value: string;
+}
+
+export interface Domain {
+  id: string;
+  workspaceId: string;
+  domain: string;
+  status: 'PENDING' | 'VERIFIED' | 'FAILED' | 'DISABLED';
+  region: string;
+  dnsRecords: DnsRecord[];
+  createAt: string;
+  updatedAt: string;
+}
+
+export interface VerifiedDomain {
+  domain: string;
+  workspaceId: string;
+  domainId: string;
+  verifiedAt: string;
 }

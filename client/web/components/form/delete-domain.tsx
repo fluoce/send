@@ -1,6 +1,5 @@
 "use client"
 
-import { ApiKeyType } from "@/types/data/api-key-data"
 import { ReactNode, useState } from "react"
 import {
   AlertDialog,
@@ -12,33 +11,33 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "../ui/alert-dialog"
-import { useApiKeyDelete } from "@/hooks/use-api-key"
 import { useWorkspaceId } from "@/hooks/use-workspace-id"
 import { ErrorAlert } from "../shared/error-alert"
 import { Spinner } from "../ui/spinner"
 import { Button } from "../ui/button"
+import { useDomainDelete } from "@/hooks/use-domain"
 
 export function DeleteDomain({
-  apiKey,
+  domainId,
   children,
 }: {
   children: ReactNode
-  apiKey: ApiKeyType
+  domainId: string
 }) {
   const workspaceId = useWorkspaceId()
 
   const [open, setOpen] = useState(false)
 
-  const d = useApiKeyDelete()
+  const d = useDomainDelete()
 
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete API key ?</AlertDialogTitle>
+          <AlertDialogTitle>Delete Domain ?</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete this API key? This action cannot be
+            Are you sure you want to delete this domain? This action cannot be
             undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
@@ -48,10 +47,11 @@ export function DeleteDomain({
           <Button
             onClick={() => {
               d.mutateAsync({
-                apiKeyId: apiKey.id,
+                domainId,
                 workspaceId,
               }).then(() => setOpen(false))
             }}
+            disabled={d.isPending}
           >
             {d.isPending && <Spinner />} Delete
           </Button>
