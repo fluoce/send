@@ -238,6 +238,32 @@ export class DomainCore {
     return result?.Items ?? [];
   }
 
+  async getVerifiedDomains({ workspaceId }: { workspaceId: string }) {
+    const result = await funcTryCatch<QueryCommandOutput, null>({
+      func: async () =>
+        await this.dynamoDB.send(
+          new QueryCommand({
+            TableName: tableName.domain,
+            KeyConditionExpression: 'workspaceId = :workspaceId',
+            FilterExpression: '#status = :status',
+            ExpressionAttributeNames: { '#status': 'status' },
+            ExpressionAttributeValues: {
+              ':workspaceId': workspaceId,
+              ':status': 'VERIFIED',
+            },
+          }),
+        ),
+      logger: this.logger,
+      action: 'getVerifiedDomains_QueryCommand',
+    });
+
+    if (!result) {
+      throw new BadRequestException('Failed to get Verified Domains');
+    }
+
+    return result?.Items ?? [];
+  }
+
   async checkVerifiedDomain({
     domain,
     workspaceId,

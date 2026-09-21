@@ -16,10 +16,12 @@ import { Button } from "../ui/button"
 import {
   Ban,
   CheckCheck,
+  ChevronDown,
   CircleCheck,
   Copy,
   Edit,
   EllipsisVertical,
+  Plus,
   Trash2,
 } from "lucide-react"
 import { funcDate } from "@/func/func-date"
@@ -30,6 +32,7 @@ import { useApiKeyUpdate } from "@/hooks/use-api-key"
 import { useWorkspaceId } from "@/hooks/use-workspace-id"
 import { Spinner } from "../ui/spinner"
 import { DeleteApiKey } from "../form/delete-api-key"
+import { AttachDomainWithApiKey } from "../form/attach-domain-with-api-key"
 
 const columnHelper = createColumnHelper<
   DataTableFeatures,
@@ -62,6 +65,27 @@ export const ApiKeyColumns = columnHelper.columns([
             {showCopiedSuccess ? <CheckCheck /> : <Copy />}
           </Button>
         </div>
+      )
+    },
+  }),
+  columnHelper.accessor("domain", {
+    header: "Domain",
+    cell: (info) => {
+      const domain = info.row.original.domain
+      return (
+        <AttachDomainWithApiKey domain={domain!}>
+          <Button variant="ghost">
+            {!domain ? (
+              <span className="flex items-center gap-1">
+                {funcTrunc(domain?.domain)} <ChevronDown />
+              </span>
+            ) : (
+              <span className="flex items-center gap-1 text-blue-500">
+                <Plus /> Domain
+              </span>
+            )}
+          </Button>
+        </AttachDomainWithApiKey>
       )
     },
   }),

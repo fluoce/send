@@ -52,6 +52,7 @@ export function SelectWorkspace({
           <Button
             className="flex max-w-40 flex-1 items-center justify-between"
             variant="secondary"
+            size="lg"
           >
             <span className="truncate">{selectedWorkspace?.name}</span>
             <ChevronDown />

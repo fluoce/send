@@ -91,15 +91,18 @@ export function CreateUpdateWorkspace({
                 : " A workspace allows you to organize and manage your API keys efficiently without interruptions place."}
             </FieldDescription>
           </div>
-          <Input
-            autoFocus
-            className="h-10"
-            id="create-workspace"
-            placeholder="workspace name . . . "
-            {...register("name", {
-              required: "workspace name is required.",
-            })}
-          />
+          <Field>
+            <FieldLabel htmlFor="workspace-name">Name</FieldLabel>
+            <Input
+              autoFocus
+              className="h-10"
+              id="workspace-name"
+              placeholder="workspace name . . . "
+              {...register("name", {
+                required: "workspace name is required.",
+              })}
+            />
+          </Field>
           <Button className="h-10" disabled={c.isPending || u.isPending}>
             {(c.isPending || u.isPending) && <Spinner />}{" "}
             {workspace ? "Update" : "Create"}

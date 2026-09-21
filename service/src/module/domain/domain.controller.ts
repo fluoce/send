@@ -61,6 +61,13 @@ export class DomainController {
     });
   }
 
+  @Get('verified')
+  async getVerifiedDomain(@Workspace() workspace: WorkspaceType) {
+    return await this.domainService.getVerifiedDomains({
+      workspaceId: workspace.id,
+    });
+  }
+
   @Get(':domainId')
   async getDomain(
     @Param('domainId') domainId: string,

@@ -49,6 +49,29 @@ export function useDomains({ workspaceId }: { workspaceId: string }) {
   })
 }
 
+export function useVerifiedDomains({
+  workspaceId,
+  enabled,
+}: {
+  workspaceId: string
+  enabled: boolean
+}) {
+  const f = useFetch()
+  return useQuery<ResType<DomainsDataType>>({
+    queryKey: domainQueryKey.verifiedDomains({
+      workspaceId,
+    }),
+    queryFn: () =>
+      f({
+        endpoint: domainEndpoint.getVerified({
+          workspaceId,
+        }),
+        method: "GET",
+      }),
+    enabled,
+  })
+}
+
 export function useDomainCreate() {
   const q = useQueryClient()
   const f = useFetch()
@@ -68,6 +91,11 @@ export function useDomainCreate() {
     onSuccess: (_, { workspaceId }) => {
       q.invalidateQueries({
         queryKey: domainQueryKey.domains({ workspaceId }),
+      })
+      q.invalidateQueries({
+        queryKey: domainQueryKey.verifiedDomains({
+          workspaceId,
+        }),
       })
     },
   })
@@ -98,6 +126,11 @@ export function useDomainUpdate() {
       q.invalidateQueries({
         queryKey: domainQueryKey.domain({ domainId }),
       })
+      q.invalidateQueries({
+        queryKey: domainQueryKey.verifiedDomains({
+          workspaceId,
+        }),
+      })
     },
     onError: (error) => {
       toast.error(error?.message || "Failed to update status")
@@ -127,6 +160,11 @@ export function useDomainDelete() {
       q.invalidateQueries({
         queryKey: domainQueryKey.domain({
           domainId,
+        }),
+      })
+      q.invalidateQueries({
+        queryKey: domainQueryKey.verifiedDomains({
+          workspaceId,
         }),
       })
     },

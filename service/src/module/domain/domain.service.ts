@@ -103,4 +103,21 @@ export class DomainService {
       domain,
     };
   }
+
+  async getVerifiedDomains({
+    workspaceId,
+  }: {
+    workspaceId: string;
+  }): Promise<ResponseDataType> {
+    const domains = await this.domainCore.getVerifiedDomains({
+      workspaceId,
+    });
+    if (!domains) {
+      throw new ServiceUnavailableException('Failed to get verified domains');
+    }
+    return {
+      message: 'Verified Domains fetched successfully',
+      domains,
+    };
+  }
 }

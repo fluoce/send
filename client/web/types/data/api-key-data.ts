@@ -1,3 +1,5 @@
+import { DomainType } from "./domain-data"
+
 export type ApiKeyStatusType = "ACTIVE" | "DEACTIVE" | "SUSPEND"
 
 export type ApiKeyType = {
@@ -5,6 +7,7 @@ export type ApiKeyType = {
   workspaceId: string
   name: string
   key: string
+  domain?: DomainType | null
   status: ApiKeyStatusType
   expireAt: string
   createdAt: string

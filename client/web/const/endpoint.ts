@@ -46,6 +46,8 @@ export const domainEndpoint = {
     `${domainBase({ workspaceId })}/${domainId}`,
   getAll: ({ workspaceId }: { workspaceId: string }) =>
     domainBase({ workspaceId }),
+  getVerified: ({ workspaceId }: { workspaceId: string }) =>
+    `${domainBase({ workspaceId })}/verified`,
   create: ({ workspaceId }: { workspaceId: string }) =>
     domainBase({ workspaceId }),
   update: ({

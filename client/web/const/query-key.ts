@@ -20,5 +20,10 @@ export const domainQueryKey = {
     "domains",
     `${workspaceId}`,
   ],
+  verifiedDomains: ({ workspaceId }: { workspaceId: string }) => [
+    "domains",
+    "verified",
+    `${workspaceId}`,
+  ],
   domain: ({ domainId }: { domainId: string }) => ["domain", `${domainId}`],
 }
