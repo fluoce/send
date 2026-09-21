@@ -143,6 +143,7 @@ export class DomainService {
         workspaceId,
       },
     );
+
     if (!verifiedDomain) {
       throw new BadRequestException(
         'Verified domain not found for this workspace',

@@ -321,30 +321,34 @@ export class DomainCore {
     domainId: string;
     workspaceId: string;
   }): Promise<Domain | null> {
-    const result = await funcTryCatch<GetCommandOutput | null, null>({
+    const result = await funcTryCatch<QueryCommandOutput | null, null>({
       func: async () =>
         await this.dynamoDB.send(
-          new GetCommand({
+          new QueryCommand({
             TableName: tableName.verifiedDomain,
-            Key: {
-              domainId,
-              workspaceId,
+            // TODO : create index on DomainId
+            IndexName: 'DomainIdIndex',
+            KeyConditionExpression: 'domainId = :domainId',
+            FilterExpression: 'workspaceId = :workspaceId',
+            ExpressionAttributeValues: {
+              ':domainId': domainId,
+              ':workspaceId': workspaceId,
             },
+            Limit: 1,
           }),
         ),
       logger: this.logger,
-      action: 'getVerifiedDomain_GetCommand',
+      action: 'getVerifiedDomain_QueryCommand',
     });
 
     if (!result) {
       throw new ServiceUnavailableException(
-        'Failed to check verified domain for workspace',
+        'Failed to check verified domain for workspace!',
       );
     }
 
-    return result.Item ? (result.Item as Domain) : null;
+    return result.Items?.[0] ? (result.Items[0] as Domain) : null;
   }
-
   normalizedDomain({ domain }: { domain: string }) {
     return domain.trim().toLowerCase();
   }

@@ -46,16 +46,18 @@ export class ApiKeyService {
     apiKeyId,
     domainId,
   }: AttachDomainWithApiKeyDto): Promise<ResponseDataType> {
-    const verifiedDomain =
-      await this.domainService.getWorkspaceVerifiedDomainById({
-        domainId,
-        workspaceId,
-      });
+    if (domainId && domainId !== 'none') {
+      const verifiedDomain =
+        await this.domainService.getWorkspaceVerifiedDomainById({
+          domainId,
+          workspaceId,
+        });
 
-    if (!verifiedDomain.domain) {
-      throw new BadRequestException(
-        'Verified domain not found for this workspace',
-      );
+      if (!verifiedDomain.domain) {
+        throw new BadRequestException(
+          'Verified domain not found for this workspace',
+        );
+      }
     }
 
     const apikey = await this.apiKeyCore.attachDomain({
