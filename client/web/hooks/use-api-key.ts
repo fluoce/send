@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useFetch } from "./use-fetch"
 import { apiKeyEndpoint } from "@/const/endpoint"
 import {
+  ApiKeyAttechDomainType,
   ApiKeyCreateType,
   ApiKeyUpdateType,
 } from "@/types/payload/api-key-payload"
@@ -87,6 +88,32 @@ export function useApiKeyUpdate() {
     }) =>
       f({
         endpoint: apiKeyEndpoint.update({ workspaceId, apiKeyId }),
+        method: "PATCH",
+        body,
+      }),
+    onSuccess: (_, { workspaceId }) => {
+      q.invalidateQueries({
+        queryKey: apiKeyQueryKey.apiKeys({ workspaceId }),
+      })
+    },
+  })
+}
+
+export function useApiKeyAttechDomain() {
+  const q = useQueryClient()
+  const f = useFetch()
+  return useMutation({
+    mutationFn: ({
+      body,
+      workspaceId,
+      apiKeyId,
+    }: {
+      body: ApiKeyAttechDomainType
+      workspaceId: string
+      apiKeyId: string
+    }) =>
+      f({
+        endpoint: apiKeyEndpoint.attechDomain({ workspaceId, apiKeyId }),
         method: "PATCH",
         body,
       }),

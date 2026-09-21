@@ -9,7 +9,11 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiKeyService } from './api-key.service';
-import { CreateApiKeyBodyDto, UpdateApiKeyBodyDto } from './api-key.dto';
+import {
+  AttachDomainWithApiKeyBodyDto,
+  CreateApiKeyBodyDto,
+  UpdateApiKeyBodyDto,
+} from './api-key.dto';
 import { WorkspaceGuard } from '../workspace/workspace.guard';
 import { Workspace } from 'src/decorator/workspace.decorator';
 import { type Workspace as WorkspaceType } from 'src/config/database';
@@ -42,6 +46,19 @@ export class ApiKeyController {
       expireAt: data.expireAt,
       name: data.name,
       status: data.status,
+      workspaceId: workspace.id,
+    });
+  }
+
+  @Patch(':apiKeyId/domain')
+  async attachDomain(
+    @Param('apiKeyId') apiKeyId: string,
+    @Body() body: AttachDomainWithApiKeyBodyDto,
+    @Workspace() workspace: WorkspaceType,
+  ) {
+    return await this.apiKeyService.attachDomain({
+      apiKeyId,
+      domainId: body.domainId,
       workspaceId: workspace.id,
     });
   }

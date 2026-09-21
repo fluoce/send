@@ -23,19 +23,25 @@ import {
   SelectValue,
 } from "../ui/select"
 import { Spinner } from "../ui/spinner"
-import { Plus } from "lucide-react"
+import { Globe, GlobeX, Plus } from "lucide-react"
 import { dashboardRoute } from "@/const/route"
 import Link from "next/link"
+import { ErrorAlert } from "../shared/error-alert"
+import { funcTrunc } from "@/func/func-trunc"
+import { RemoveDomainFromApiKey } from "./remove-domain-from-api-key"
+import { useApiKeyAttechDomain } from "@/hooks/use-api-key"
+import { ApiKeyType } from "@/types/data/api-key-data"
 
 export function AttachDomainWithApiKey({
   children,
+  apiKey,
   domain,
 }: {
   children: ReactNode
   domain?: DomainType
+  apiKey: ApiKeyType
 }) {
   const {
-    register,
     handleSubmit,
     reset,
     formState: { errors },
@@ -58,7 +64,27 @@ export function AttachDomainWithApiKey({
     enabled: open,
   })
 
-  function submit(body: { domainId: string }) {}
+  const u = useApiKeyAttechDomain()
+
+  function submit(body: { domainId: string }) {
+    if (!body.domainId) {
+      setError("domainId", {
+        message: "Select Domain",
+      })
+    }
+    if (domain && domain?.id === body.domainId) {
+      setError("domainId", {
+        message: "This domain is already attached.",
+      })
+    }
+    u.mutateAsync({
+      apiKeyId: apiKey.id,
+      workspaceId,
+      body: {
+        domainId: body.domainId,
+      },
+    }).then(() => setOpen(false))
+  }
 
   const Form = () => (
     <form onSubmit={handleSubmit(submit)}>
@@ -86,16 +112,16 @@ export function AttachDomainWithApiKey({
               rules={{ required: "Domain is required." }}
               render={({ field }) => (
                 <Select onValueChange={field.onChange} value={field.value}>
-                  <SelectTrigger id="select-domain" className="h-10 w-full">
-                    <SelectValue
-                      className="h-10"
-                      placeholder="Choose a domain..."
-                    />
+                  <SelectTrigger id="select-domain" className="w-full py-4.5">
+                    <SelectValue placeholder="Choose a domain..." />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="none">
+                      <GlobeX /> None
+                    </SelectItem>
                     {data?.data?.domains?.map((d) => (
                       <SelectItem key={d.id} value={d.id}>
-                        {d.domain}
+                        <Globe /> {d.domain}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -115,8 +141,19 @@ export function AttachDomainWithApiKey({
             </Link>
           )}
         </Field>
-
-        <Button className="h-10">Save</Button>
+        {/* {domain ? (
+          <Field>
+            <FieldLabel>Remove Domain</FieldLabel>
+            <RemoveDomainFromApiKey domain={domain}>
+              <Button type="button" className="max-w-fit" variant="destructive">
+                <GlobeX /> Remove {funcTrunc(domain?.domain)}
+              </Button>
+            </RemoveDomainFromApiKey>
+          </Field>
+        ) : null} */}
+        <Button className="h-10">{u.isPending && <Spinner />} Save</Button>
+        {errors.domainId && <ErrorAlert error={errors?.domainId?.message!} />}
+        {u.isError && <ErrorAlert error={u?.error?.message!} />}
       </Field>
     </form>
   )

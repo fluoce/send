@@ -20,7 +20,12 @@ import {
 } from '@nestjs/common';
 import { database, tableName } from 'src/config/database';
 import { UlidService } from 'src/lib/ulid/ulid.service';
-import { ApiKeyDto, CreateApiKeyDto, UpdateApiKeyDto } from './api-key.dto';
+import {
+  ApiKeyDto,
+  AttachDomainWithApiKeyDto,
+  CreateApiKeyDto,
+  UpdateApiKeyDto,
+} from './api-key.dto';
 import { funcTryCatch } from 'src/function/func-try-catch';
 import { funcGenerateApiKey } from 'src/function/func-generate-api-key';
 import { funcBuildUpdateExpression } from 'src/function/func-build-update-expression';
@@ -106,6 +111,42 @@ export class ApiKeyCore {
 
     if (!result?.Attributes) {
       throw new BadRequestException('ApiKey update failed');
+    }
+
+    return result.Attributes;
+  }
+
+  async attachDomain({
+    workspaceId,
+    apiKeyId,
+    domainId,
+  }: AttachDomainWithApiKeyDto) {
+    const updatedDomainId = domainId === 'none' ? null : domainId;
+    const updateExpression = funcBuildUpdateExpression({
+      domainId: updatedDomainId,
+    });
+
+    const result = await funcTryCatch<UpdateCommandOutput | null, null>({
+      func: async () =>
+        await this.dynamoDB.send(
+          new UpdateCommand({
+            TableName: tableName.apiKey,
+            Key: {
+              workspaceId,
+              id: apiKeyId,
+            },
+            ...updateExpression,
+            ConditionExpression:
+              'attribute_exists(workspaceId) AND attribute_exists(id)',
+            ReturnValues: 'ALL_NEW',
+          }),
+        ),
+      logger: this.logger,
+      action: 'attachDomain_UpdateCommand',
+    });
+
+    if (!result?.Attributes) {
+      throw new BadRequestException('Attaching domain to API key failed');
     }
 
     return result.Attributes;

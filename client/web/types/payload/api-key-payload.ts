@@ -8,3 +8,7 @@ export type ApiKeyUpdateType = {
   expireAt?: string
   status?: "ACTIVE" | "DEACTIVE" | "SUSPEND"
 }
+
+export type ApiKeyAttechDomainType = {
+  domainId: string
+}

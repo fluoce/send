@@ -4,12 +4,20 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { ApiKeyCore } from './api-key.core';
-import { CreateApiKeyDto, UpdateApiKeyDto } from './api-key.dto';
+import {
+  AttachDomainWithApiKeyDto,
+  CreateApiKeyDto,
+  UpdateApiKeyDto,
+} from './api-key.dto';
 import { ResponseDataType } from 'src/types/response.type';
+import { DomainService } from '../domain/domain.service';
 
 @Injectable()
 export class ApiKeyService {
-  constructor(private readonly apiKeyCore: ApiKeyCore) {}
+  constructor(
+    private readonly apiKeyCore: ApiKeyCore,
+    private readonly domainService: DomainService,
+  ) {}
 
   async createApiKey(data: CreateApiKeyDto): Promise<ResponseDataType> {
     const apikey = await this.apiKeyCore.createApiKey(data);
@@ -29,6 +37,39 @@ export class ApiKeyService {
     }
     return {
       message: 'Apikey Updated successfully',
+      apikey,
+    };
+  }
+
+  async attachDomain({
+    workspaceId,
+    apiKeyId,
+    domainId,
+  }: AttachDomainWithApiKeyDto): Promise<ResponseDataType> {
+    const verifiedDomain =
+      await this.domainService.getWorkspaceVerifiedDomainById({
+        domainId,
+        workspaceId,
+      });
+
+    if (!verifiedDomain.domain) {
+      throw new BadRequestException(
+        'Verified domain not found for this workspace',
+      );
+    }
+
+    const apikey = await this.apiKeyCore.attachDomain({
+      apiKeyId,
+      domainId,
+      workspaceId,
+    });
+
+    if (!apikey) {
+      throw new BadRequestException('Failed to attach domain');
+    }
+
+    return {
+      message: 'Domain attached to ApiKey successfully',
       apikey,
     };
   }

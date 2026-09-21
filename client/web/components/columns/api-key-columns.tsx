@@ -71,13 +71,16 @@ export const ApiKeyColumns = columnHelper.columns([
   columnHelper.accessor("domain", {
     header: "Domain",
     cell: (info) => {
-      const domain = info.row.original.domain
+      const apiKey = info.row.original
       return (
-        <AttachDomainWithApiKey domain={domain!}>
+        <AttachDomainWithApiKey
+          apiKey={apiKey}
+          domain={apiKey?.domain ?? undefined}
+        >
           <Button variant="ghost">
-            {domain ? (
+            {apiKey?.domain ? (
               <span className="flex items-center gap-1">
-                {funcTrunc(domain?.domain)} <ChevronDown />
+                {funcTrunc(apiKey?.domain?.domain)} <ChevronDown />
               </span>
             ) : (
               <span className="flex items-center gap-1 text-blue-500">

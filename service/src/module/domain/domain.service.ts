@@ -1,8 +1,13 @@
-import { Injectable, ServiceUnavailableException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { DomainCore } from './domain.core';
 import { CreateDomainDto, DomainDto, UpdateDomainDto } from './domain.dto';
 import { ResponseDataType } from 'src/types/response.type';
 import { domainRegex } from 'src/config/regex';
+import { Domain } from 'src/config/database';
 
 @Injectable()
 export class DomainService {
@@ -118,6 +123,34 @@ export class DomainService {
     return {
       message: 'Verified Domains fetched successfully',
       domains,
+    };
+  }
+
+  async getWorkspaceVerifiedDomainById({
+    domainId,
+    workspaceId,
+  }: {
+    domainId: string;
+    workspaceId: string;
+  }): Promise<
+    ResponseDataType & {
+      domain: Domain;
+    }
+  > {
+    const verifiedDomain = await this.domainCore.getWorkspaceVerifiedDomainById(
+      {
+        domainId,
+        workspaceId,
+      },
+    );
+    if (!verifiedDomain) {
+      throw new BadRequestException(
+        'Verified domain not found for this workspace',
+      );
+    }
+    return {
+      message: 'Verified Domains fetched successfully',
+      domain: verifiedDomain,
     };
   }
 }

@@ -29,6 +29,13 @@ export const apiKeyEndpoint = {
     workspaceId: string
     apiKeyId: string
   }) => `${apiKeyBase({ workspaceId })}/${apiKeyId}`,
+  attechDomain: ({
+    workspaceId,
+    apiKeyId,
+  }: {
+    workspaceId: string
+    apiKeyId: string
+  }) => `${apiKeyBase({ workspaceId })}/${apiKeyId}/domain`,
   delete: ({
     workspaceId,
     apiKeyId,

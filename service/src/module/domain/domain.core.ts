@@ -6,7 +6,7 @@ import {
   Logger,
   ServiceUnavailableException,
 } from '@nestjs/common';
-import { database, tableName } from 'src/config/database';
+import { database, Domain, tableName } from 'src/config/database';
 import {
   DeleteCommand,
   DeleteCommandOutput,
@@ -312,6 +312,37 @@ export class DomainCore {
     }
 
     return result.Item ?? null;
+  }
+
+  async getWorkspaceVerifiedDomainById({
+    domainId,
+    workspaceId,
+  }: {
+    domainId: string;
+    workspaceId: string;
+  }): Promise<Domain | null> {
+    const result = await funcTryCatch<GetCommandOutput | null, null>({
+      func: async () =>
+        await this.dynamoDB.send(
+          new GetCommand({
+            TableName: tableName.verifiedDomain,
+            Key: {
+              domainId,
+              workspaceId,
+            },
+          }),
+        ),
+      logger: this.logger,
+      action: 'getVerifiedDomain_GetCommand',
+    });
+
+    if (!result) {
+      throw new ServiceUnavailableException(
+        'Failed to check verified domain for workspace',
+      );
+    }
+
+    return result.Item ? (result.Item as Domain) : null;
   }
 
   normalizedDomain({ domain }: { domain: string }) {

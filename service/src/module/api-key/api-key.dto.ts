@@ -1,25 +1,19 @@
-import {
-  IsDate,
-  IsEnum,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-} from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateApiKeyBodyDto {
   @IsNotEmpty()
   @IsString()
-  name?: string;
+  name!: string;
 
   @IsOptional()
   @IsString()
-  expireAt?: Date;
+  expireAt!: Date;
 }
 
 export class CreateApiKeyDto extends CreateApiKeyBodyDto {
   @IsNotEmpty()
   @IsString()
-  workspaceId?: string;
+  workspaceId!: string;
 }
 
 export class UpdateApiKeyBodyDto {
@@ -45,19 +39,35 @@ export class UpdateApiKeyBodyDto {
 export class UpdateApiKeyDto extends UpdateApiKeyBodyDto {
   @IsNotEmpty()
   @IsString()
-  workspaceId?: string;
+  workspaceId!: string;
 
   @IsNotEmpty()
   @IsString()
-  apiKeyId?: string;
+  apiKeyId!: string;
+}
+
+export class AttachDomainWithApiKeyBodyDto {
+  @IsString()
+  @IsNotEmpty()
+  domainId!: string;
+}
+
+export class AttachDomainWithApiKeyDto extends AttachDomainWithApiKeyBodyDto {
+  @IsNotEmpty()
+  @IsString()
+  workspaceId!: string;
+
+  @IsNotEmpty()
+  @IsString()
+  apiKeyId!: string;
 }
 
 export class ApiKeyDto {
   @IsNotEmpty()
   @IsString()
-  workspaceId?: string;
+  workspaceId!: string;
 
   @IsNotEmpty()
   @IsString()
-  apiKeyId?: string;
+  apiKeyId!: string;
 }
