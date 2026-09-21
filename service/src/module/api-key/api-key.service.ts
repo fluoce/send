@@ -5,12 +5,14 @@ import {
 } from '@nestjs/common';
 import { ApiKeyCore } from './api-key.core';
 import {
+  ApiKeyDto,
   AttachDomainWithApiKeyDto,
   CreateApiKeyDto,
   UpdateApiKeyDto,
 } from './api-key.dto';
 import { ResponseDataType } from 'src/types/response.type';
 import { DomainService } from '../domain/domain.service';
+import { Domain } from 'src/config/database';
 
 @Injectable()
 export class ApiKeyService {
@@ -87,25 +89,67 @@ export class ApiKeyService {
     };
   }
 
-  async getApiKey(data: any): Promise<ResponseDataType> {
-    const apikey = await this.apiKeyCore.getApiKey(data);
+  async getApiKey({
+    apiKeyId,
+    workspaceId,
+  }: ApiKeyDto): Promise<ResponseDataType> {
+    const apikey = await this.apiKeyCore.getApiKey({
+      apiKeyId,
+      workspaceId,
+    });
+
     if (!apikey) {
       throw new BadRequestException('ApiKey not found');
     }
+
+    let domain: Domain | null = null;
+
+    if (apikey?.domainId) {
+      const domainResponse = await this.domainService.getDomain({
+        workspaceId,
+        domainId: apikey.domainId,
+      });
+      domain = domainResponse?.domain ?? null;
+    }
+
     return {
       message: 'Apikey fetched successfully',
-      apikey,
+      apikey: {
+        ...apikey,
+        domain,
+      },
     };
   }
 
-  async getApiKeys(data: { workspaceId: string }): Promise<ResponseDataType> {
-    const apiKeys = await this.apiKeyCore.getApiKeys(data);
-    if (!apiKeys) {
-      throw new BadRequestException('Failed to get ApiKeys');
-    }
+  async getApiKeys({
+    workspaceId,
+  }: {
+    workspaceId: string;
+  }): Promise<ResponseDataType> {
+    const [apikeys, domainsResponse] = await Promise.all([
+      this.apiKeyCore.getApiKeys({
+        workspaceId,
+      }),
+
+      this.domainService.getDomains({
+        workspaceId,
+      }),
+    ]);
+
+    const domains = domainsResponse.domains ?? [];
+
+    const domainMap = new Map(
+      domains.map((domain: Domain) => [domain.id, domain]),
+    );
+
+    const apikeysWithDomain = apikeys.map((apikey) => ({
+      ...apikey,
+      domain: apikey.domainId ? (domainMap.get(apikey.domainId) ?? null) : null,
+    }));
+
     return {
       message: 'Apikeys fetched successfully',
-      apiKeys,
+      apiKeys: apikeysWithDomain,
     };
   }
 

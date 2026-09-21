@@ -18,7 +18,7 @@ import {
   Logger,
   ServiceUnavailableException,
 } from '@nestjs/common';
-import { database, tableName } from 'src/config/database';
+import { ApiKey, database, Domain, tableName } from 'src/config/database';
 import { UlidService } from 'src/lib/ulid/ulid.service';
 import {
   ApiKeyDto,

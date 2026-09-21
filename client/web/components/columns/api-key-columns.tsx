@@ -21,6 +21,7 @@ import {
   Copy,
   Edit,
   EllipsisVertical,
+  Globe,
   Plus,
   Trash2,
 } from "lucide-react"
@@ -79,8 +80,8 @@ export const ApiKeyColumns = columnHelper.columns([
         >
           <Button variant="ghost">
             {apiKey?.domain ? (
-              <span className="flex items-center gap-1">
-                {funcTrunc(apiKey?.domain?.domain)} <ChevronDown />
+              <span className="flex items-center gap-2">
+                <Globe /> {funcTrunc(apiKey?.domain?.domain)} <ChevronDown />
               </span>
             ) : (
               <span className="flex items-center gap-1 text-blue-500">

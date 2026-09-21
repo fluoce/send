@@ -326,7 +326,6 @@ export class DomainCore {
         await this.dynamoDB.send(
           new QueryCommand({
             TableName: tableName.verifiedDomain,
-            // TODO : create index on DomainId
             IndexName: 'DomainIdIndex',
             KeyConditionExpression: 'domainId = :domainId',
             FilterExpression: 'workspaceId = :workspaceId',

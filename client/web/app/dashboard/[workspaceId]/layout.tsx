@@ -9,9 +9,7 @@ export default function DashboardMainLyaout({
   return (
     <div className="flex h-full w-full flex-col gap-4">
       <AppTopbar />
-      <div className="min-h-[200vh] w-full flex-1 overflow-x-auto px-4">
-        {children}
-      </div>
+      <div className="w-full flex-1 overflow-x-auto px-4">{children}</div>
     </div>
   )
 }

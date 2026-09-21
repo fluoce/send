@@ -21,8 +21,6 @@ export default function ApikeyPage() {
     workspaceId,
   })
 
-  console.log(data?.data.apiKeys)
-
   if (isLoading) {
     return <PageSpinner />
   }

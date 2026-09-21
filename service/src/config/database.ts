@@ -23,6 +23,7 @@ export interface ApiKey {
   workspaceId: string;
   name: string;
   key: string;
+  domainId?: string | null;
   status: 'ACTIVE' | 'DEACTIVE' | 'SUSPEND';
   createAt: string;
   updatedAt: string;
