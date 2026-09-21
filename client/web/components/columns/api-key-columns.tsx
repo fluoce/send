@@ -75,7 +75,7 @@ export const ApiKeyColumns = columnHelper.columns([
       return (
         <AttachDomainWithApiKey domain={domain!}>
           <Button variant="ghost">
-            {!domain ? (
+            {domain ? (
               <span className="flex items-center gap-1">
                 {funcTrunc(domain?.domain)} <ChevronDown />
               </span>
