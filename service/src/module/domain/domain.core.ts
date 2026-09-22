@@ -431,7 +431,10 @@ export class DomainCore {
     const domain = domainResult.Item as Domain;
 
     if (domain.status === 'VERIFIED') {
-      return domain;
+      return {
+        ...domain,
+        verified: true,
+      };
     }
 
     const sesResult = await funcTryCatch<
@@ -460,37 +463,67 @@ export class DomainCore {
       return {
         ...domain,
         status: 'PENDING',
-        verificationStatus: dkimStatus ?? 'PENDING',
         verified: false,
       };
     }
 
     const verifiedAt = new Date().toISOString();
 
-    const verifiedDomain = {
-      domain: domain.domain,
-      workspaceId,
-      domainId: domain.id,
-      verifiedAt,
-    };
-
-    const verifiedResult = await funcTryCatch<PutCommandOutput | null, null>({
+    const existingVerifiedDomain = await funcTryCatch<
+      QueryCommandOutput | null,
+      null
+    >({
       func: async () =>
         await this.dynamoDB.send(
-          new PutCommand({
+          new QueryCommand({
             TableName: tableName.verifiedDomain,
-            Item: verifiedDomain,
-            ConditionExpression: 'attribute_not_exists(domain)',
+            IndexName: 'DomainIdIndex',
+            KeyConditionExpression: 'domainId = :domainId',
+            FilterExpression: 'workspaceId = :workspaceId',
+            ExpressionAttributeValues: {
+              ':domainId': domain.id,
+              ':workspaceId': workspaceId,
+            },
+            Limit: 1,
           }),
         ),
       logger: this.logger,
-      action: 'verifyDomain_CreateVerifiedDomain_PutCommand',
+      action: 'verifyDomain_CheckExistingVerifiedDomain_QueryCommand',
     });
 
-    if (!verifiedResult) {
-      throw new ConflictException(
-        'Domain is already verified or something went wrong',
-      );
+    if (
+      !existingVerifiedDomain ||
+      !existingVerifiedDomain.Items ||
+      !existingVerifiedDomain.Items[0]
+    ) {
+      const verifiedDomain = {
+        domain: domain.domain,
+        workspaceId,
+        domainId: domain.id,
+        verifiedAt,
+      };
+
+      const verifiedResult = await funcTryCatch<PutCommandOutput | null, null>({
+        func: async () =>
+          await this.dynamoDB.send(
+            new PutCommand({
+              TableName: tableName.verifiedDomain,
+              Item: verifiedDomain,
+              ConditionExpression: 'attribute_not_exists(#domainAttr)',
+              ExpressionAttributeNames: {
+                '#domainAttr': 'domain',
+              },
+            }),
+          ),
+        logger: this.logger,
+        action: 'verifyDomain_CreateVerifiedDomain_PutCommand',
+      });
+
+      if (!verifiedResult) {
+        throw new ServiceUnavailableException(
+          'Failed to create verified domain record',
+        );
+      }
     }
 
     const updateResult = await funcTryCatch<UpdateCommandOutput | null, null>({

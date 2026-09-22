@@ -3,7 +3,11 @@ import { useFetch } from "./use-fetch"
 import { domainEndpoint } from "@/const/endpoint"
 import { domainQueryKey } from "@/const/query-key"
 import { ResType } from "@/types/res"
-import { DomainsDataType, DomainDataType } from "@/types/data/domain-data"
+import {
+  DomainsDataType,
+  DomainDataType,
+  DomainType,
+} from "@/types/data/domain-data"
 import {
   DomainCreateType,
   DomainUpdateType,
@@ -185,8 +189,14 @@ export function useDomainVerify() {
       f({
         endpoint: domainEndpoint.verify({ workspaceId, domainId }),
         method: "PATCH",
-      }),
-    onSuccess: (_, { workspaceId, domainId }) => {
+      }) as Promise<
+        ResType<{
+          domain: DomainType & {
+            verified: boolean
+          }
+        }>
+      >,
+    onSuccess: (data, { workspaceId, domainId }) => {
       q.invalidateQueries({
         queryKey: domainQueryKey.domains({ workspaceId }),
       })
@@ -200,6 +210,7 @@ export function useDomainVerify() {
           workspaceId,
         }),
       })
+      toast.info(data?.data?.message)
     },
     onError: (error) => {
       toast.error(error?.message || "Failed to verify domain")
