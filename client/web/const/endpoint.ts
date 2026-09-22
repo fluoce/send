@@ -71,4 +71,11 @@ export const domainEndpoint = {
     workspaceId: string
     domainId: string
   }) => `${domainBase({ workspaceId })}/${domainId}`,
+  verify: ({
+    workspaceId,
+    domainId,
+  }: {
+    workspaceId: string
+    domainId: string
+  }) => `${domainBase({ workspaceId })}/${domainId}/verify`,
 }

@@ -1,10 +1,17 @@
 export type DomainStatusType = "PENDING" | "VERIFIED" | "FAILED" | "DISABLED"
 
+export interface DnsRecord {
+  type: "CNAME" | "TXT" | "MX"
+  name: string
+  value: string
+}
+
 export type DomainType = {
   id: string
   workspaceId: string
   domain: string
   status: DomainStatusType
+  dnsRecords: DnsRecord[]
   region: string
   createdAt: string
   updatedAt: string

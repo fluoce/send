@@ -78,4 +78,15 @@ export class DomainController {
       workspaceId: workspace.id,
     });
   }
+
+  @Patch(':domainId/verify')
+  async verifyDomain(
+    @Param('domainId') domainId: string,
+    @Workspace() workspace: WorkspaceType,
+  ) {
+    return await this.domainService.verifyDomain({
+      domainId,
+      workspaceId: workspace.id,
+    });
+  }
 }

@@ -154,4 +154,22 @@ export class DomainService {
       domain: verifiedDomain,
     };
   }
+
+  async verifyDomain({ domainId, workspaceId }: DomainDto) {
+    const domain = await this.domainCore.verifyDomain({
+      domainId,
+      workspaceId,
+    });
+
+    if (!domain) {
+      throw new ServiceUnavailableException('Failed to verify domain');
+    }
+
+    return {
+      message: domain?.verified
+        ? 'Domain has been verified successfully'
+        : 'Domain verification is pending',
+      domain,
+    };
+  }
 }

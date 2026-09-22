@@ -6,7 +6,7 @@ import {
   Logger,
   ServiceUnavailableException,
 } from '@nestjs/common';
-import { database, Domain, tableName } from 'src/config/database';
+import { database, DnsRecord, Domain, tableName } from 'src/config/database';
 import {
   DeleteCommand,
   DeleteCommandOutput,
@@ -25,6 +25,13 @@ import { CreateDomainDto, DomainDto, UpdateDomainDto } from './domain.dto';
 import { env } from 'src/config/env';
 import { funcTryCatch } from 'src/function/func-try-catch';
 import { funcBuildUpdateExpression } from 'src/function/func-build-update-expression';
+import { SES_CLIENT } from 'src/config/ses';
+import {
+  CreateEmailIdentityCommand,
+  GetEmailIdentityCommand,
+  GetEmailIdentityCommandOutput,
+  SESv2Client,
+} from '@aws-sdk/client-sesv2';
 
 @Injectable()
 export class DomainCore {
@@ -34,16 +41,12 @@ export class DomainCore {
     @Inject(database.dynamoDB)
     private readonly dynamoDB: DynamoDBDocumentClient,
     private readonly ulid: UlidService,
+    @Inject(SES_CLIENT)
+    private readonly ses: SESv2Client,
   ) {}
 
   async createDomain({ domain, workspaceId }: CreateDomainDto) {
-    if (!domain || !workspaceId) {
-      throw new BadRequestException('Domain or workspaceId is required');
-    }
-
-    const normalizedDomain = this.normalizedDomain({
-      domain,
-    });
+    const normalizedDomain = this.normalizedDomain({ domain });
 
     const verifiedDomain = await this.checkVerifiedDomain({
       domain: normalizedDomain,
@@ -54,6 +57,26 @@ export class DomainCore {
       throw new ConflictException('Domain is already verified');
     }
 
+    const sesResult = await this.createSesIdentity({
+      domain: normalizedDomain,
+    });
+
+    const tokens = sesResult.DkimAttributes?.Tokens;
+
+    const signingHostedZone = sesResult.DkimAttributes?.SigningHostedZone;
+
+    if (!tokens?.length || !signingHostedZone) {
+      throw new ServiceUnavailableException(
+        'Failed to get DKIM DNS records from SES',
+      );
+    }
+
+    const dnsRecords: DnsRecord[] = this.buildDnsRecords({
+      domain: normalizedDomain,
+      tokens,
+      signingHostedZone,
+    });
+
     const id = this.ulid.domainId();
     const now = new Date().toISOString();
 
@@ -63,7 +86,7 @@ export class DomainCore {
       domain: normalizedDomain,
       status: 'PENDING',
       region: env().aws.region,
-      dnsRecords: [],
+      dnsRecords,
       createdAt: now,
       updatedAt: now,
     };
@@ -348,7 +371,187 @@ export class DomainCore {
 
     return result.Items?.[0] ? (result.Items[0] as Domain) : null;
   }
-  normalizedDomain({ domain }: { domain: string }) {
+
+  async createSesIdentity({ domain }: { domain: string }) {
+    const result = await funcTryCatch<
+      GetEmailIdentityCommandOutput | null,
+      null
+    >({
+      func: async () =>
+        await this.ses.send(
+          new CreateEmailIdentityCommand({
+            EmailIdentity: domain,
+            DkimSigningAttributes: {
+              NextSigningKeyLength: 'RSA_2048_BIT',
+            },
+          }),
+        ),
+      logger: this.logger,
+      action: 'createSesIdentity_CreateEmailIdentityCommand',
+    });
+
+    if (!result) {
+      throw new ServiceUnavailableException(
+        'Failed to create SES email identity',
+      );
+    }
+
+    return result;
+  }
+
+  async verifyDomain({
+    domainId,
+    workspaceId,
+  }: DomainDto): Promise<
+    Domain & { verified?: boolean; verificationStatus?: string }
+  > {
+    const domainResult = await funcTryCatch<GetCommandOutput | null, null>({
+      func: async () =>
+        await this.dynamoDB.send(
+          new GetCommand({
+            TableName: tableName.domain,
+            Key: {
+              workspaceId,
+              id: domainId,
+            },
+          }),
+        ),
+      logger: this.logger,
+      action: 'verifyDomain_GetDomain_GetCommand',
+    });
+
+    if (!domainResult) {
+      throw new ServiceUnavailableException('Failed to get domain');
+    }
+
+    if (!domainResult.Item) {
+      throw new BadRequestException('Domain not found');
+    }
+
+    const domain = domainResult.Item as Domain;
+
+    if (domain.status === 'VERIFIED') {
+      return domain;
+    }
+
+    const sesResult = await funcTryCatch<
+      GetEmailIdentityCommandOutput | null,
+      null
+    >({
+      func: async () =>
+        await this.ses.send(
+          new GetEmailIdentityCommand({
+            EmailIdentity: domain.domain,
+          }),
+        ),
+      logger: this.logger,
+      action: 'verifyDomain_GetEmailIdentity',
+    });
+
+    if (!sesResult) {
+      throw new ServiceUnavailableException(
+        'Failed to check domain verification with SES',
+      );
+    }
+
+    const dkimStatus = sesResult.DkimAttributes?.Status;
+
+    if (dkimStatus !== 'SUCCESS') {
+      return {
+        ...domain,
+        status: 'PENDING',
+        verificationStatus: dkimStatus ?? 'PENDING',
+        verified: false,
+      };
+    }
+
+    const verifiedAt = new Date().toISOString();
+
+    const verifiedDomain = {
+      domain: domain.domain,
+      workspaceId,
+      domainId: domain.id,
+      verifiedAt,
+    };
+
+    const verifiedResult = await funcTryCatch<PutCommandOutput | null, null>({
+      func: async () =>
+        await this.dynamoDB.send(
+          new PutCommand({
+            TableName: tableName.verifiedDomain,
+            Item: verifiedDomain,
+            ConditionExpression: 'attribute_not_exists(domain)',
+          }),
+        ),
+      logger: this.logger,
+      action: 'verifyDomain_CreateVerifiedDomain_PutCommand',
+    });
+
+    if (!verifiedResult) {
+      throw new ConflictException(
+        'Domain is already verified or something went wrong',
+      );
+    }
+
+    const updateResult = await funcTryCatch<UpdateCommandOutput | null, null>({
+      func: async () => {
+        const {
+          UpdateExpression,
+          ExpressionAttributeNames,
+          ExpressionAttributeValues,
+        } = funcBuildUpdateExpression({
+          status: 'VERIFIED',
+        });
+
+        return await this.dynamoDB.send(
+          new UpdateCommand({
+            TableName: tableName.domain,
+            Key: {
+              workspaceId,
+              id: domainId,
+            },
+            UpdateExpression,
+            ExpressionAttributeNames,
+            ExpressionAttributeValues,
+            ConditionExpression:
+              'attribute_exists(workspaceId) AND attribute_exists(id)',
+            ReturnValues: 'ALL_NEW',
+          }),
+        );
+      },
+      logger: this.logger,
+      action: 'verifyDomain_UpdateDomain_UpdateCommand',
+    });
+
+    if (!updateResult?.Attributes) {
+      throw new ServiceUnavailableException(
+        'Domain verified but failed to update domain status',
+      );
+    }
+
+    return {
+      ...(updateResult.Attributes as Domain),
+      verified: true,
+    };
+  }
+
+  private normalizedDomain({ domain }: { domain: string }) {
     return domain.trim().toLowerCase();
+  }
+
+  private buildDnsRecords({
+    domain,
+    tokens,
+    signingHostedZone,
+  }: {
+    domain: string;
+    tokens: string[];
+    signingHostedZone: string;
+  }): DnsRecord[] {
+    return tokens.map((token) => ({
+      type: 'CNAME',
+      name: `${token}._domainkey.${domain}`,
+      value: `${token}.${signingHostedZone}`,
+    }));
   }
 }

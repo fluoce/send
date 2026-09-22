@@ -170,3 +170,39 @@ export function useDomainDelete() {
     },
   })
 }
+
+export function useDomainVerify() {
+  const q = useQueryClient()
+  const f = useFetch()
+  return useMutation({
+    mutationFn: ({
+      workspaceId,
+      domainId,
+    }: {
+      workspaceId: string
+      domainId: string
+    }) =>
+      f({
+        endpoint: domainEndpoint.verify({ workspaceId, domainId }),
+        method: "PATCH",
+      }),
+    onSuccess: (_, { workspaceId, domainId }) => {
+      q.invalidateQueries({
+        queryKey: domainQueryKey.domains({ workspaceId }),
+      })
+      q.invalidateQueries({
+        queryKey: domainQueryKey.domain({
+          domainId,
+        }),
+      })
+      q.invalidateQueries({
+        queryKey: domainQueryKey.verifiedDomains({
+          workspaceId,
+        }),
+      })
+    },
+    onError: (error) => {
+      toast.error(error?.message || "Failed to verify domain")
+    },
+  })
+}
