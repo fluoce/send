@@ -30,6 +30,7 @@ import { useDomainUpdate } from "@/hooks/use-domain"
 import { useWorkspaceId } from "@/hooks/use-workspace-id"
 import { Spinner } from "../ui/spinner"
 import { VerifyDomain } from "../form/verify-domain"
+import { Badge } from "../ui/badge"
 
 const columnHelper = createColumnHelper<
   DataTableFeatures,
@@ -58,7 +59,7 @@ export const DomainColumns = columnHelper.columns([
       return (
         <div className="flex items-center gap-2">
           <span className={colorClass}>{status}</span>
-          {status !== "VERIFIED" && status !== "DISABLED" && (
+          {status == "PENDING" && (
             <VerifyDomain domain={info.row.original}>
               <Button variant="secondary" size="sm" className="text-blue-500">
                 <Repeat2 /> verify

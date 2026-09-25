@@ -4,19 +4,24 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { DomainCore } from './domain.core';
-import { CreateDomainDto, DomainDto, UpdateDomainDto } from './domain.dto';
-import { ResponseDataType } from 'src/types/response.type';
+import {
+  CreateDomainDto,
+  DeleteDomainDto,
+  GetDomainDto,
+  GetDomainsDto,
+  GetVerifiedDomainByIdForWorkspaceDto,
+  GetVerifyedDomainsDto,
+  UpdateDomainDto,
+  VerifyDomainDto,
+} from './domain.dto';
 import { domainRegex } from 'src/config/regex';
-import { Domain } from 'src/config/database';
+import { DomainServiceInterface } from './domain.interface';
 
 @Injectable()
-export class DomainService {
+export class DomainService implements DomainServiceInterface {
   constructor(private readonly domainCore: DomainCore) {}
 
-  async createDomain({
-    domain,
-    workspaceId,
-  }: CreateDomainDto): Promise<ResponseDataType> {
+  async createDomain({ domain, workspaceId }: CreateDomainDto) {
     if (!domain) {
       throw new ServiceUnavailableException('Domain is required');
     }
@@ -39,11 +44,7 @@ export class DomainService {
     };
   }
 
-  async updateDomain({
-    domainId,
-    status,
-    workspaceId,
-  }: UpdateDomainDto): Promise<ResponseDataType> {
+  async updateDomain({ domainId, status, workspaceId }: UpdateDomainDto) {
     const updatedDomain = await this.domainCore.updateDomain({
       domainId,
       status,
@@ -58,10 +59,7 @@ export class DomainService {
     };
   }
 
-  async deleteDomain({
-    domainId,
-    workspaceId,
-  }: DomainDto): Promise<ResponseDataType> {
+  async deleteDomain({ domainId, workspaceId }: DeleteDomainDto) {
     const domainRecord = await this.domainCore.deleteDomain({
       domainId,
       workspaceId,
@@ -75,27 +73,7 @@ export class DomainService {
     };
   }
 
-  async getDomains({
-    workspaceId,
-  }: {
-    workspaceId: string;
-  }): Promise<ResponseDataType> {
-    const domains = await this.domainCore.getDomains({
-      workspaceId,
-    });
-    if (!domains) {
-      throw new ServiceUnavailableException('Failed to get domains');
-    }
-    return {
-      message: 'Domains fetched successfully',
-      domains,
-    };
-  }
-
-  async getDomain({
-    domainId,
-    workspaceId,
-  }: DomainDto): Promise<ResponseDataType> {
+  async getDomain({ domainId, workspaceId }: GetDomainDto) {
     const domain = await this.domainCore.getDomain({
       domainId,
       workspaceId,
@@ -109,11 +87,20 @@ export class DomainService {
     };
   }
 
-  async getVerifiedDomains({
-    workspaceId,
-  }: {
-    workspaceId: string;
-  }): Promise<ResponseDataType> {
+  async getDomains({ workspaceId }: GetDomainsDto) {
+    const domains = await this.domainCore.getDomains({
+      workspaceId,
+    });
+    if (!domains) {
+      throw new ServiceUnavailableException('Failed to get domains');
+    }
+    return {
+      message: 'Domains fetched successfully',
+      domains,
+    };
+  }
+
+  async getVerifiedDomains({ workspaceId }: GetVerifyedDomainsDto) {
     const domains = await this.domainCore.getVerifiedDomains({
       workspaceId,
     });
@@ -126,17 +113,10 @@ export class DomainService {
     };
   }
 
-  async getWorkspaceVerifiedDomainById({
+  async getVerifiedDomainByIdForWorkspace({
     domainId,
     workspaceId,
-  }: {
-    domainId: string;
-    workspaceId: string;
-  }): Promise<
-    ResponseDataType & {
-      domain: Domain;
-    }
-  > {
+  }: GetVerifiedDomainByIdForWorkspaceDto) {
     const verifiedDomain =
       await this.domainCore.getVerifiedDomainByIdForWorkspace({
         domainId,
@@ -154,7 +134,7 @@ export class DomainService {
     };
   }
 
-  async verifyDomain({ domainId, workspaceId }: DomainDto) {
+  async verifyDomain({ domainId, workspaceId }: VerifyDomainDto) {
     const domain = await this.domainCore.verifyDomain({
       domainId,
       workspaceId,
@@ -167,7 +147,12 @@ export class DomainService {
     return {
       message: domain?.verified
         ? 'Domain has been verified successfully'
-        : 'Domain verification is pending',
+        : domain?.awsSesStatus === 'FAILED'
+          ? 'The DNS record is no longer valid. Please delete this domain record and try again.'
+          : domain?.awsSesStatus
+            ? `Domain verification is ${domain?.awsSesStatus}`
+            : 'Domain verification is pending',
+
       domain,
     };
   }

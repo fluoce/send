@@ -28,6 +28,16 @@ export class UpdateDomainDto extends UpdateDomainBodyDto {
   domainId!: string;
 }
 
+export class MarkAsFailedDomainDto {
+  @IsNotEmpty()
+  @IsString()
+  workspaceId!: string;
+
+  @IsNotEmpty()
+  @IsString()
+  domainId!: string;
+}
+
 export class DeleteDomainDto {
   @IsNotEmpty()
   @IsString()
@@ -76,7 +86,7 @@ export class CheckVerifiedDomainDto {
   workspaceId!: string;
 }
 
-export class GetVerifiedDomainByIdForWorkspace {
+export class GetVerifiedDomainByIdForWorkspaceDto {
   @IsNotEmpty()
   @IsString()
   workspaceId!: string;
@@ -86,7 +96,13 @@ export class GetVerifiedDomainByIdForWorkspace {
   domainId!: string;
 }
 
-export class GetSesIdentityForDomain {
+export class GetSesIdentityForDomainDto {
+  @IsNotEmpty()
+  @IsString()
+  domain!: string;
+}
+
+export class GetSesDkimStatusDto {
   @IsNotEmpty()
   @IsString()
   domain!: string;

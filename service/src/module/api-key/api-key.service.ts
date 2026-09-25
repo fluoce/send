@@ -162,7 +162,7 @@ export class ApiKeyService implements ApiKeyServiceInterface {
   > {
     if (domainId && domainId !== 'none') {
       const verifiedDomain =
-        await this.domainService.getWorkspaceVerifiedDomainById({
+        await this.domainService.getVerifiedDomainByIdForWorkspace({
           domainId,
           workspaceId,
         });

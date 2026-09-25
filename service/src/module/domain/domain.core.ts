@@ -25,13 +25,14 @@ import {
   CheckVerifiedDomainDto,
   CreateDomainDto,
   DeleteDomainDto,
-  DomainDto,
   GetDomainDto,
   GetDomainsDto,
-  GetSesIdentityForDomain,
-  GetVerifiedDomainByIdForWorkspace,
+  GetSesDkimStatusDto,
+  GetSesIdentityForDomainDto,
+  GetVerifiedDomainByIdForWorkspaceDto,
   GetVerifyedDomainDto,
   GetVerifyedDomainsDto,
+  MarkAsFailedDomainDto,
   UpdateDomainDto,
   VerifyDomainDto,
 } from './domain.dto';
@@ -161,6 +162,37 @@ export class DomainCore implements DomainCoreInterface {
 
     const updateExpression = funcBuildUpdateExpression({
       status,
+    });
+
+    const result = await funcTryCatch<UpdateCommandOutput | null, null>({
+      func: async () =>
+        await this.dynamoDB.send(
+          new UpdateCommand({
+            TableName: tableName.domain,
+            Key: {
+              workspaceId,
+              id: domainId,
+            },
+            ...updateExpression,
+            ConditionExpression:
+              'attribute_exists(workspaceId) AND attribute_exists(id)',
+            ReturnValues: 'ALL_NEW',
+          }),
+        ),
+      logger: this.logger,
+      action: 'updateDomain_UpdateCommand',
+    });
+
+    if (!result?.Attributes) {
+      throw new BadRequestException('Domain update failed');
+    }
+
+    return result.Attributes as Domain;
+  }
+
+  async markAsFailedDomain({ domainId, workspaceId }: MarkAsFailedDomainDto) {
+    const updateExpression = funcBuildUpdateExpression({
+      status: 'FAILED',
     });
 
     const result = await funcTryCatch<UpdateCommandOutput | null, null>({
@@ -355,7 +387,7 @@ export class DomainCore implements DomainCoreInterface {
   async getVerifiedDomainByIdForWorkspace({
     domainId,
     workspaceId,
-  }: GetVerifiedDomainByIdForWorkspace) {
+  }: GetVerifiedDomainByIdForWorkspaceDto) {
     const result = await funcTryCatch<QueryCommandOutput | null, null>({
       func: async () =>
         await this.dynamoDB.send(
@@ -384,7 +416,7 @@ export class DomainCore implements DomainCoreInterface {
     return result.Items?.[0] ? (result.Items[0] as Domain) : null;
   }
 
-  async getSesIdentityForDomain({ domain }: GetSesIdentityForDomain) {
+  async getSesIdentityForDomain({ domain }: GetSesIdentityForDomainDto) {
     const result = await funcTryCatch<
       GetEmailIdentityCommandOutput | null,
       null
@@ -411,39 +443,7 @@ export class DomainCore implements DomainCoreInterface {
     return result;
   }
 
-  async verifyDomain({ domainId, workspaceId }: VerifyDomainDto) {
-    const domainResult = await funcTryCatch<GetCommandOutput | null, null>({
-      func: async () =>
-        await this.dynamoDB.send(
-          new GetCommand({
-            TableName: tableName.domain,
-            Key: {
-              workspaceId,
-              id: domainId,
-            },
-          }),
-        ),
-      logger: this.logger,
-      action: 'verifyDomain_GetDomain_GetCommand',
-    });
-
-    if (!domainResult) {
-      throw new ServiceUnavailableException('Failed to get domain');
-    }
-
-    if (!domainResult.Item) {
-      throw new BadRequestException('Domain not found');
-    }
-
-    const domain = domainResult.Item as Domain;
-
-    if (domain.status === 'VERIFIED') {
-      return {
-        ...domain,
-        verified: true,
-      };
-    }
-
+  async getSesDkimStatus({ domain }: GetSesDkimStatusDto) {
     const sesResult = await funcTryCatch<
       GetEmailIdentityCommandOutput | null,
       null
@@ -451,7 +451,7 @@ export class DomainCore implements DomainCoreInterface {
       func: async () =>
         await this.ses.send(
           new GetEmailIdentityCommand({
-            EmailIdentity: domain.domain,
+            EmailIdentity: domain,
           }),
         ),
       logger: this.logger,
@@ -464,52 +464,67 @@ export class DomainCore implements DomainCoreInterface {
       );
     }
 
+    return sesResult;
+  }
+
+  async verifyDomain({ domainId, workspaceId }: VerifyDomainDto) {
+    const domain = await this.getDomain({
+      domainId,
+      workspaceId,
+    });
+
+    if (domain.status === 'VERIFIED') {
+      return {
+        ...domain,
+        verified: true,
+        awsSesStatus: 'SUCCESS',
+      };
+    }
+
+    const sesResult = await this.getSesDkimStatus({
+      domain: domain.domain,
+    });
+
     const dkimStatus = sesResult.DkimAttributes?.Status;
+
+    if (dkimStatus === 'FAILED') {
+      const updateDomainFailed = await this.markAsFailedDomain({
+        domainId: domain.id,
+        workspaceId,
+      });
+
+      return {
+        ...updateDomainFailed,
+        verified: false,
+        awsSesStatus: dkimStatus,
+      } as Domain & { verified: boolean; awsSesStatus?: string };
+    }
 
     if (dkimStatus !== 'SUCCESS') {
       return {
         ...domain,
         verified: false,
         status: domain.status === 'PENDING' ? domain.status : 'PENDING',
-      } as Domain & { verified: boolean };
+        awsSesStatus: dkimStatus,
+      };
     }
 
     const verifiedAt = new Date().toISOString();
 
-    const existingVerifiedDomain = await funcTryCatch<
-      QueryCommandOutput | null,
-      null
-    >({
-      func: async () =>
-        await this.dynamoDB.send(
-          new QueryCommand({
-            TableName: tableName.verifiedDomain,
-            IndexName: 'DomainIdIndex',
-            KeyConditionExpression: 'domainId = :domainId',
-            FilterExpression: 'workspaceId = :workspaceId',
-            ExpressionAttributeValues: {
-              ':domainId': domain.id,
-              ':workspaceId': workspaceId,
-            },
-            Limit: 1,
-          }),
-        ),
-      logger: this.logger,
-      action: 'verifyDomain_CheckExistingVerifiedDomain_QueryCommand',
-    });
+    const existingVerifiedDomain = await this.getVerifiedDomainByIdForWorkspace(
+      {
+        domainId: domain.id,
+        workspaceId,
+      },
+    );
 
-    if (
-      !existingVerifiedDomain ||
-      !existingVerifiedDomain.Items ||
-      !existingVerifiedDomain.Items[0]
-    ) {
+    if (!existingVerifiedDomain) {
       const verifiedDomain = {
         domain: domain.domain,
         workspaceId,
         domainId: domain.id,
         verifiedAt,
       };
-
       const verifiedResult = await funcTryCatch<PutCommandOutput | null, null>({
         func: async () =>
           await this.dynamoDB.send(
@@ -533,45 +548,22 @@ export class DomainCore implements DomainCoreInterface {
       }
     }
 
-    const updateResult = await funcTryCatch<UpdateCommandOutput | null, null>({
-      func: async () => {
-        const {
-          UpdateExpression,
-          ExpressionAttributeNames,
-          ExpressionAttributeValues,
-        } = funcBuildUpdateExpression({
-          status: 'VERIFIED',
-        });
-
-        return await this.dynamoDB.send(
-          new UpdateCommand({
-            TableName: tableName.domain,
-            Key: {
-              workspaceId,
-              id: domainId,
-            },
-            UpdateExpression,
-            ExpressionAttributeNames,
-            ExpressionAttributeValues,
-            ConditionExpression:
-              'attribute_exists(workspaceId) AND attribute_exists(id)',
-            ReturnValues: 'ALL_NEW',
-          }),
-        );
-      },
-      logger: this.logger,
-      action: 'verifyDomain_UpdateDomain_UpdateCommand',
+    const updateDomain = await this.updateDomain({
+      domainId: domain.id,
+      workspaceId,
+      status: 'VERIFIED',
     });
 
-    if (!updateResult?.Attributes) {
+    if (!updateDomain) {
       throw new ServiceUnavailableException(
         'Domain verified but failed to update domain status',
       );
     }
 
     return {
-      ...(updateResult.Attributes as Domain),
+      ...updateDomain,
       verified: true,
+      awsSesStatus: dkimStatus,
     };
   }
 }
