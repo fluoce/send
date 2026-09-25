@@ -44,7 +44,7 @@ export function VerifyDomain({
             domain.
           </SheetDescription>
         </SheetHeader>
-        <div className="custom-scroll flex flex-col gap-4 overflow-auto px-6">
+        <div className="custom-scroll flex flex-col gap-4 overflow-auto px-6 pb-6">
           <span>DNS records</span>
           {domain?.dnsRecords?.map((dns) => (
             <ShowDnsRecord dns={dns} key={dns?.value} />

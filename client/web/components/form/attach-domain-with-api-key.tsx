@@ -105,7 +105,7 @@ export function AttachDomainWithApiKey({
             <div className="flex items-center justify-center p-1.5">
               <Spinner />
             </div>
-          ) : data?.data?.domains?.length ? (
+          ) : (
             <Controller
               control={control}
               name="domainId"
@@ -128,29 +128,19 @@ export function AttachDomainWithApiKey({
                 </Select>
               )}
             />
-          ) : (
-            <Link
-              tabIndex={-1}
-              href={dashboardRoute.domain({
-                workspaceId,
-              })}
-            >
-              <Button variant="secondary" className="text-blue-500">
-                <Plus /> Domain
-              </Button>
-            </Link>
           )}
         </Field>
-        {/* {domain ? (
-          <Field>
-            <FieldLabel>Remove Domain</FieldLabel>
-            <RemoveDomainFromApiKey domain={domain}>
-              <Button type="button" className="max-w-fit" variant="destructive">
-                <GlobeX /> Remove {funcTrunc(domain?.domain)}
-              </Button>
-            </RemoveDomainFromApiKey>
-          </Field>
-        ) : null} */}
+        <Link
+          tabIndex={-1}
+          href={dashboardRoute.domain({
+            workspaceId,
+          })}
+        >
+          <Button variant="secondary" className="text-blue-500">
+            <Plus />
+            New Domain
+          </Button>
+        </Link>
         <Button className="h-10">{u.isPending && <Spinner />} Save</Button>
         {errors.domainId && <ErrorAlert error={errors?.domainId?.message!} />}
         {u.isError && <ErrorAlert error={u?.error?.message!} />}
