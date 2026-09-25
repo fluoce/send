@@ -3,6 +3,8 @@ const base = "/dashboard"
 export const dashboardRoute = {
   base,
   createWorkspace: `${base}/create-workspace`,
+  upgrade: ({ workspaceId }: { workspaceId: string }) =>
+    `${base}/${workspaceId}/upgrade`,
   workspace: ({ workspaceId }: { workspaceId: string }) =>
     `${base}/${workspaceId}`,
   workspaceSetting: ({ worksapceId }: { worksapceId: string }) =>

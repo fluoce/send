@@ -24,6 +24,10 @@ import {
   ApiKeyDto,
   AttachDomainWithApiKeyDto,
   CreateApiKeyDto,
+  DeleteApiKeyDto,
+  GetApiKeyByKeyDto,
+  GetApiKeyDto,
+  GetApiKeysDto,
   UpdateApiKeyDto,
 } from './api-key.dto';
 import { funcTryCatch } from 'src/function/func-try-catch';
@@ -117,7 +121,7 @@ export class ApiKeyCore implements ApiKeyCoreInterface {
     return result.Attributes as ApiKey;
   }
 
-  async deleteApiKey({ apiKeyId, workspaceId }: ApiKeyDto) {
+  async deleteApiKey({ apiKeyId, workspaceId }: DeleteApiKeyDto) {
     const result = await funcTryCatch<DeleteCommandOutput | null, null>({
       func: () =>
         this.dynamoDB.send(
@@ -143,7 +147,7 @@ export class ApiKeyCore implements ApiKeyCoreInterface {
     return result.Attributes as ApiKey;
   }
 
-  async getApiKey({ apiKeyId, workspaceId }: ApiKeyDto) {
+  async getApiKey({ apiKeyId, workspaceId }: GetApiKeyDto) {
     const result = await funcTryCatch<GetCommandOutput | null, null>({
       func: async () =>
         await this.dynamoDB.send(
@@ -166,7 +170,7 @@ export class ApiKeyCore implements ApiKeyCoreInterface {
     return result.Item as ApiKey;
   }
 
-  async getApiKeys({ workspaceId }: { workspaceId: string }) {
+  async getApiKeys({ workspaceId }: GetApiKeysDto) {
     const result = await funcTryCatch<QueryCommandOutput, null>({
       func: async () =>
         await this.dynamoDB.send(
@@ -187,7 +191,7 @@ export class ApiKeyCore implements ApiKeyCoreInterface {
     return result?.Items as ApiKey[];
   }
 
-  async getApiKeyByKey({ key }: { key: string }) {
+  async getApiKeyByKey({ key }: GetApiKeyByKeyDto) {
     const result = await funcTryCatch<QueryCommandOutput, null>({
       func: async () =>
         await this.dynamoDB.send(

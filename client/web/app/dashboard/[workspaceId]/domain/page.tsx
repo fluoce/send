@@ -29,7 +29,7 @@ export default function DomainPage() {
     <PageWrapper>
       <div className="flex items-center justify-between gap-4">
         <PageHeader
-          title="Domain"
+          title="Domains"
           description="Manage your workspace's Domains."
         />
         <CreateUpdateDomain>

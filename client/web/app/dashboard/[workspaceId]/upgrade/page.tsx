@@ -1,12 +1,12 @@
 import { PageHeader } from "@/components/shared/page-header"
 import { PageWrapper } from "@/components/shared/page-wrapper"
 
-export default function WorkspaceHomePage() {
+export default function Upgrade() {
   return (
     <PageWrapper>
       <PageHeader
-        title="Dashboard"
-        description="Overview of your Send workspace."
+        title="Upgrade"
+        description="Upgrade your Send workspace to unlock more features."
       />
     </PageWrapper>
   )

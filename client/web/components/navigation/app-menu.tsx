@@ -3,7 +3,13 @@
 import Link from "next/link"
 import { dashboardRoute, externalRoute } from "@/const/route"
 import { useWorkspaceId } from "@/hooks/use-workspace-id"
-import { ArrowUpRight, Globe, Key, LayoutDashboard } from "lucide-react"
+import {
+  ArrowUpRight,
+  Globe,
+  Key,
+  LayoutDashboard,
+  Sparkle,
+} from "lucide-react"
 import { Button } from "../ui/button"
 import { usePathname } from "next/navigation"
 
@@ -49,9 +55,18 @@ export function AppMenu() {
         ))}
       </div>
       <div className="flex items-center gap-2">
+        <Link
+          href={dashboardRoute.upgrade({
+            workspaceId,
+          })}
+        >
+          <Button variant="ghost" size="lg">
+            <Sparkle className="text-primary" /> Upgrade
+          </Button>
+        </Link>
         <Link href={externalRoute.sendDocs} tabIndex={-1} target="_blank">
           <Button variant="ghost" size="lg">
-            <ArrowUpRight /> Docs
+            <ArrowUpRight className="text-blue-500" /> Docs
           </Button>
         </Link>
       </div>
