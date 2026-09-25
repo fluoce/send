@@ -12,73 +12,51 @@ import {
 } from './api-key.dto';
 import { ResponseDataType } from 'src/types/response.type';
 import { DomainService } from '../domain/domain.service';
-import { Domain } from 'src/config/database';
+import { ApiKey, Domain } from 'src/config/database';
+import { ApiKeyServiceInterface } from './api-key.interface';
 
 @Injectable()
-export class ApiKeyService {
+export class ApiKeyService implements ApiKeyServiceInterface {
   constructor(
     private readonly apiKeyCore: ApiKeyCore,
     private readonly domainService: DomainService,
   ) {}
 
-  async createApiKey(data: CreateApiKeyDto): Promise<ResponseDataType> {
-    const apikey = await this.apiKeyCore.createApiKey(data);
-    if (!apikey) {
+  async createApiKey(data: CreateApiKeyDto): Promise<
+    ResponseDataType<{
+      apiKey: ApiKey;
+    }>
+  > {
+    const apiKey = await this.apiKeyCore.createApiKey(data);
+    if (!apiKey) {
       throw new ServiceUnavailableException('ApiKey creation failed');
     }
     return {
       message: 'Apikey created successfully',
-      apikey,
+      apiKey,
     };
   }
 
-  async updateApiKey(data: UpdateApiKeyDto): Promise<ResponseDataType> {
-    const apikey = await this.apiKeyCore.updateApiKey(data);
-    if (!apikey) {
+  async updateApiKey(data: UpdateApiKeyDto): Promise<
+    ResponseDataType<{
+      apiKey: ApiKey;
+    }>
+  > {
+    const apiKey = await this.apiKeyCore.updateApiKey(data);
+    if (!apiKey) {
       throw new BadRequestException('ApiKey update failed');
     }
     return {
       message: 'Apikey Updated successfully',
-      apikey,
+      apiKey,
     };
   }
 
-  async attachDomain({
-    workspaceId,
-    apiKeyId,
-    domainId,
-  }: AttachDomainWithApiKeyDto): Promise<ResponseDataType> {
-    if (domainId && domainId !== 'none') {
-      const verifiedDomain =
-        await this.domainService.getWorkspaceVerifiedDomainById({
-          domainId,
-          workspaceId,
-        });
-
-      if (!verifiedDomain.domain) {
-        throw new BadRequestException(
-          'Verified domain not found for this workspace',
-        );
-      }
-    }
-
-    const apikey = await this.apiKeyCore.attachDomain({
-      apiKeyId,
-      domainId,
-      workspaceId,
-    });
-
-    if (!apikey) {
-      throw new BadRequestException('Failed to attach domain');
-    }
-
-    return {
-      message: 'Domain attached to ApiKey successfully',
-      apikey,
-    };
-  }
-
-  async deleteApiKey(data: any): Promise<ResponseDataType> {
+  async deleteApiKey(data: any): Promise<
+    ResponseDataType<{
+      apiKey: ApiKey;
+    }>
+  > {
     const deletedApiKey = await this.apiKeyCore.deleteApiKey(data);
     if (!deletedApiKey) {
       throw new BadRequestException('ApiKey delete failed');
@@ -89,10 +67,11 @@ export class ApiKeyService {
     };
   }
 
-  async getApiKey({
-    apiKeyId,
-    workspaceId,
-  }: ApiKeyDto): Promise<ResponseDataType> {
+  async getApiKey({ apiKeyId, workspaceId }: ApiKeyDto): Promise<
+    ResponseDataType<{
+      apiKey: ApiKey & { domain: Domain | null };
+    }>
+  > {
     const apikey = await this.apiKeyCore.getApiKey({
       apiKeyId,
       workspaceId,
@@ -114,23 +93,22 @@ export class ApiKeyService {
 
     return {
       message: 'Apikey fetched successfully',
-      apikey: {
+      apiKey: {
         ...apikey,
         domain,
       },
     };
   }
 
-  async getApiKeys({
-    workspaceId,
-  }: {
-    workspaceId: string;
-  }): Promise<ResponseDataType> {
+  async getApiKeys({ workspaceId }: { workspaceId: string }): Promise<
+    ResponseDataType<{
+      apiKeys: (ApiKey & { domain: Domain | null })[];
+    }>
+  > {
     const [apikeys, domainsResponse] = await Promise.all([
       this.apiKeyCore.getApiKeys({
         workspaceId,
       }),
-
       this.domainService.getDomains({
         workspaceId,
       }),
@@ -138,14 +116,19 @@ export class ApiKeyService {
 
     const domains = domainsResponse.domains ?? [];
 
-    const domainMap = new Map(
+    const domainMap = new Map<string, Domain>(
       domains.map((domain: Domain) => [domain.id, domain]),
     );
 
-    const apikeysWithDomain = apikeys.map((apikey) => ({
-      ...apikey,
-      domain: apikey.domainId ? (domainMap.get(apikey.domainId) ?? null) : null,
-    }));
+    const apikeysWithDomain: (ApiKey & { domain: Domain | null })[] =
+      apikeys.map((apikey) => {
+        return {
+          ...apikey,
+          domain: apikey.domainId
+            ? (domainMap.get(apikey.domainId) ?? null)
+            : null,
+        };
+      });
 
     return {
       message: 'Apikeys fetched successfully',
@@ -153,13 +136,56 @@ export class ApiKeyService {
     };
   }
 
-  async getApiKeyByKey(data: { key: string }): Promise<ResponseDataType> {
+  async getApiKeyByKey(data: { key: string }): Promise<
+    ResponseDataType<{
+      apiKey: ApiKey;
+    }>
+  > {
     const apiKey = await this.apiKeyCore.getApiKeyByKey(data);
     if (!apiKey) {
       throw new BadRequestException('Failed to get ApiKey');
     }
     return {
       message: 'Apikey fetched successfully',
+      apiKey,
+    };
+  }
+
+  async attachDomainWithApiKey({
+    workspaceId,
+    apiKeyId,
+    domainId,
+  }: AttachDomainWithApiKeyDto): Promise<
+    ResponseDataType<{
+      apiKey: ApiKey;
+    }>
+  > {
+    if (domainId && domainId !== 'none') {
+      const verifiedDomain =
+        await this.domainService.getWorkspaceVerifiedDomainById({
+          domainId,
+          workspaceId,
+        });
+
+      if (!verifiedDomain.domain) {
+        throw new BadRequestException(
+          'Verified domain not found for this workspace',
+        );
+      }
+    }
+
+    const apiKey = await this.apiKeyCore.attachDomainWithApiKey({
+      apiKeyId,
+      domainId,
+      workspaceId,
+    });
+
+    if (!apiKey) {
+      throw new BadRequestException('Failed to attach domain');
+    }
+
+    return {
+      message: 'Domain attached to ApiKey successfully',
       apiKey,
     };
   }

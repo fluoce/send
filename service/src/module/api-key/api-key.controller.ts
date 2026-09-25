@@ -51,12 +51,12 @@ export class ApiKeyController {
   }
 
   @Patch(':apiKeyId/domain')
-  async attachDomain(
+  async attachDomainWithApiKey(
     @Param('apiKeyId') apiKeyId: string,
     @Body() body: AttachDomainWithApiKeyBodyDto,
     @Workspace() workspace: WorkspaceType,
   ) {
-    return await this.apiKeyService.attachDomain({
+    return await this.apiKeyService.attachDomainWithApiKey({
       apiKeyId,
       domainId: body.domainId,
       workspaceId: workspace.id,

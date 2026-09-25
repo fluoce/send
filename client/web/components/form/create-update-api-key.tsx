@@ -73,7 +73,6 @@ export function CreateUpdateApiKey({
         })
         return
       }
-
       u.mutateAsync({
         apiKeyId: apiKey?.id,
         body,

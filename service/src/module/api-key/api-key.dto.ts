@@ -24,7 +24,6 @@ export class UpdateApiKeyBodyDto {
 
   @IsOptional()
   @IsString()
-  @IsNotEmpty()
   expireAt?: Date;
 
   @IsOptional()
@@ -44,6 +43,38 @@ export class UpdateApiKeyDto extends UpdateApiKeyBodyDto {
   @IsNotEmpty()
   @IsString()
   apiKeyId!: string;
+}
+
+export class DeleteApiKeyDto {
+  @IsNotEmpty()
+  @IsString()
+  workspaceId!: string;
+
+  @IsNotEmpty()
+  @IsString()
+  apiKeyId!: string;
+}
+
+export class GetApiKeyDto {
+  @IsNotEmpty()
+  @IsString()
+  workspaceId!: string;
+
+  @IsNotEmpty()
+  @IsString()
+  apiKeyId!: string;
+}
+
+export class GetApiKeysDto {
+  @IsNotEmpty()
+  @IsString()
+  workspaceId!: string;
+}
+
+export class GetApiKeyByKeyDto {
+  @IsNotEmpty()
+  @IsString()
+  key!: string;
 }
 
 export class AttachDomainWithApiKeyBodyDto {

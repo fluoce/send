@@ -21,7 +21,20 @@ import {
   UpdateCommandOutput,
 } from '@aws-sdk/lib-dynamodb';
 import { UlidService } from 'src/lib/ulid/ulid.service';
-import { CreateDomainDto, DomainDto, UpdateDomainDto } from './domain.dto';
+import {
+  CheckVerifiedDomainDto,
+  CreateDomainDto,
+  DeleteDomainDto,
+  DomainDto,
+  GetDomainDto,
+  GetDomainsDto,
+  GetSesIdentityForDomain,
+  GetVerifiedDomainByIdForWorkspace,
+  GetVerifyedDomainDto,
+  GetVerifyedDomainsDto,
+  UpdateDomainDto,
+  VerifyDomainDto,
+} from './domain.dto';
 import { env } from 'src/config/env';
 import { funcTryCatch } from 'src/function/func-try-catch';
 import { funcBuildUpdateExpression } from 'src/function/func-build-update-expression';
@@ -32,9 +45,12 @@ import {
   GetEmailIdentityCommandOutput,
   SESv2Client,
 } from '@aws-sdk/client-sesv2';
+import { funcNormalizedDomain } from 'src/function/func-normalized-domain';
+import { funcBuildDnsRecords } from 'src/function/func-build-dns-records';
+import { DomainCoreInterface } from './domain.interface';
 
 @Injectable()
-export class DomainCore {
+export class DomainCore implements DomainCoreInterface {
   private readonly logger = new Logger(DomainCore.name);
 
   constructor(
@@ -46,7 +62,7 @@ export class DomainCore {
   ) {}
 
   async createDomain({ domain, workspaceId }: CreateDomainDto) {
-    const normalizedDomain = this.normalizedDomain({ domain });
+    const normalizedDomain = funcNormalizedDomain({ domain });
 
     const verifiedDomain = await this.checkVerifiedDomain({
       domain: normalizedDomain,
@@ -57,7 +73,7 @@ export class DomainCore {
       throw new ConflictException('Domain is already verified');
     }
 
-    const sesResult = await this.createSesIdentity({
+    const sesResult = await this.getSesIdentityForDomain({
       domain: normalizedDomain,
     });
 
@@ -71,7 +87,7 @@ export class DomainCore {
       );
     }
 
-    const dnsRecords: DnsRecord[] = this.buildDnsRecords({
+    const dnsRecords: DnsRecord[] = funcBuildDnsRecords({
       domain: normalizedDomain,
       tokens,
       signingHostedZone,
@@ -80,7 +96,7 @@ export class DomainCore {
     const id = this.ulid.domainId();
     const now = new Date().toISOString();
 
-    const item = {
+    const item: Domain = {
       id,
       workspaceId,
       domain: normalizedDomain,
@@ -110,50 +126,6 @@ export class DomainCore {
     }
 
     return item;
-  }
-
-  async deleteDomain({ domainId, workspaceId }: DomainDto) {
-    const result = await funcTryCatch<DeleteCommandOutput | null, null>({
-      func: () =>
-        this.dynamoDB.send(
-          new DeleteCommand({
-            TableName: tableName.domain,
-            Key: {
-              workspaceId,
-              id: domainId,
-            },
-            ConditionExpression:
-              'attribute_exists(workspaceId) AND attribute_exists(id)',
-            ReturnValues: 'ALL_OLD',
-          }),
-        ),
-      logger: this.logger,
-      action: 'deleteDomain_DeleteCommand',
-    });
-
-    if (!result?.Attributes) {
-      throw new BadRequestException('Domain delete failed');
-    }
-
-    const { domain } = result.Attributes;
-    if (domain?.status == 'VERIFIED') {
-      await funcTryCatch<DeleteCommandOutput | null, null>({
-        func: async () =>
-          await this.dynamoDB.send(
-            new DeleteCommand({
-              TableName: tableName.verifiedDomain,
-              Key: {
-                domain: this.normalizedDomain({ domain }),
-              },
-              ConditionExpression: 'attribute_exists(domain)',
-            }),
-          ),
-        logger: this.logger,
-        action: 'deleteVerifiedDomain_DeleteCommand',
-      });
-    }
-
-    return domain;
   }
 
   async updateDomain({ domainId, status, workspaceId }: UpdateDomainDto) {
@@ -214,10 +186,55 @@ export class DomainCore {
       throw new BadRequestException('Domain update failed');
     }
 
-    return result.Attributes;
+    return result.Attributes as Domain;
   }
 
-  async getDomain({ domainId, workspaceId }: DomainDto) {
+  async deleteDomain({ domainId, workspaceId }: DeleteDomainDto) {
+    const result = await funcTryCatch<DeleteCommandOutput | null, null>({
+      func: () =>
+        this.dynamoDB.send(
+          new DeleteCommand({
+            TableName: tableName.domain,
+            Key: {
+              workspaceId,
+              id: domainId,
+            },
+            ConditionExpression:
+              'attribute_exists(workspaceId) AND attribute_exists(id)',
+            ReturnValues: 'ALL_OLD',
+          }),
+        ),
+      logger: this.logger,
+      action: 'deleteDomain_DeleteCommand',
+    });
+
+    if (!result?.Attributes) {
+      throw new BadRequestException('Domain delete failed');
+    }
+
+    const { domain } = result.Attributes;
+
+    if (domain?.status == 'VERIFIED') {
+      await funcTryCatch<DeleteCommandOutput | null, null>({
+        func: async () =>
+          await this.dynamoDB.send(
+            new DeleteCommand({
+              TableName: tableName.verifiedDomain,
+              Key: {
+                domain: funcNormalizedDomain({ domain }),
+              },
+              ConditionExpression: 'attribute_exists(domain)',
+            }),
+          ),
+        logger: this.logger,
+        action: 'deleteVerifiedDomain_DeleteCommand',
+      });
+    }
+
+    return domain;
+  }
+
+  async getDomain({ domainId, workspaceId }: GetDomainDto) {
     const result = await funcTryCatch<GetCommandOutput | null, null>({
       func: async () =>
         await this.dynamoDB.send(
@@ -237,10 +254,10 @@ export class DomainCore {
       throw new BadRequestException('Domain not found');
     }
 
-    return result.Item;
+    return result.Item as Domain;
   }
 
-  async getDomains({ workspaceId }: { workspaceId: string }) {
+  async getDomains({ workspaceId }: GetDomainsDto) {
     const result = await funcTryCatch<QueryCommandOutput, null>({
       func: async () =>
         await this.dynamoDB.send(
@@ -258,10 +275,40 @@ export class DomainCore {
       throw new BadRequestException('Failed to get Domains');
     }
 
-    return result?.Items ?? [];
+    return result?.Items as Domain[];
   }
 
-  async getVerifiedDomains({ workspaceId }: { workspaceId: string }) {
+  async getVerifiedDomain({ domain }: GetVerifyedDomainDto) {
+    const normalizedDomain = funcNormalizedDomain({
+      domain,
+    });
+
+    const result = await funcTryCatch<GetCommandOutput | null, null>({
+      func: async () =>
+        await this.dynamoDB.send(
+          new GetCommand({
+            TableName: tableName.verifiedDomain,
+            Key: {
+              domain: normalizedDomain,
+            },
+          }),
+        ),
+      logger: this.logger,
+      action: 'getVerifiedDomain_GetCommand',
+    });
+
+    if (!result) {
+      throw new ServiceUnavailableException('Failed to check verified domain');
+    }
+
+    if (!result.Item) {
+      return null;
+    }
+
+    return result.Item as Domain;
+  }
+
+  async getVerifiedDomains({ workspaceId }: GetVerifyedDomainsDto) {
     const result = await funcTryCatch<QueryCommandOutput, null>({
       func: async () =>
         await this.dynamoDB.send(
@@ -284,16 +331,10 @@ export class DomainCore {
       throw new BadRequestException('Failed to get Verified Domains');
     }
 
-    return result?.Items ?? [];
+    return result?.Items as Domain[];
   }
 
-  async checkVerifiedDomain({
-    domain,
-    workspaceId,
-  }: {
-    domain: string;
-    workspaceId: string;
-  }) {
+  async checkVerifiedDomain({ domain, workspaceId }: CheckVerifiedDomainDto) {
     const verifiedDomain = await this.getVerifiedDomain({
       domain,
     });
@@ -311,39 +352,10 @@ export class DomainCore {
     );
   }
 
-  async getVerifiedDomain({ domain }: { domain: string }) {
-    const normalizedDomain = this.normalizedDomain({
-      domain,
-    });
-
-    const result = await funcTryCatch<GetCommandOutput | null, null>({
-      func: async () =>
-        await this.dynamoDB.send(
-          new GetCommand({
-            TableName: tableName.verifiedDomain,
-            Key: {
-              domain: normalizedDomain,
-            },
-          }),
-        ),
-      logger: this.logger,
-      action: 'getVerifiedDomain_GetCommand',
-    });
-
-    if (!result) {
-      throw new ServiceUnavailableException('Failed to check verified domain');
-    }
-
-    return result.Item ?? null;
-  }
-
-  async getWorkspaceVerifiedDomainById({
+  async getVerifiedDomainByIdForWorkspace({
     domainId,
     workspaceId,
-  }: {
-    domainId: string;
-    workspaceId: string;
-  }): Promise<Domain | null> {
+  }: GetVerifiedDomainByIdForWorkspace) {
     const result = await funcTryCatch<QueryCommandOutput | null, null>({
       func: async () =>
         await this.dynamoDB.send(
@@ -372,7 +384,7 @@ export class DomainCore {
     return result.Items?.[0] ? (result.Items[0] as Domain) : null;
   }
 
-  async createSesIdentity({ domain }: { domain: string }) {
+  async getSesIdentityForDomain({ domain }: GetSesIdentityForDomain) {
     const result = await funcTryCatch<
       GetEmailIdentityCommandOutput | null,
       null
@@ -399,12 +411,7 @@ export class DomainCore {
     return result;
   }
 
-  async verifyDomain({
-    domainId,
-    workspaceId,
-  }: DomainDto): Promise<
-    Domain & { verified?: boolean; verificationStatus?: string }
-  > {
+  async verifyDomain({ domainId, workspaceId }: VerifyDomainDto) {
     const domainResult = await funcTryCatch<GetCommandOutput | null, null>({
       func: async () =>
         await this.dynamoDB.send(
@@ -462,9 +469,9 @@ export class DomainCore {
     if (dkimStatus !== 'SUCCESS') {
       return {
         ...domain,
-        status: 'PENDING',
         verified: false,
-      };
+        status: domain.status === 'PENDING' ? domain.status : 'PENDING',
+      } as Domain & { verified: boolean };
     }
 
     const verifiedAt = new Date().toISOString();
@@ -566,25 +573,5 @@ export class DomainCore {
       ...(updateResult.Attributes as Domain),
       verified: true,
     };
-  }
-
-  private normalizedDomain({ domain }: { domain: string }) {
-    return domain.trim().toLowerCase();
-  }
-
-  private buildDnsRecords({
-    domain,
-    tokens,
-    signingHostedZone,
-  }: {
-    domain: string;
-    tokens: string[];
-    signingHostedZone: string;
-  }): DnsRecord[] {
-    return tokens.map((token) => ({
-      type: 'CNAME',
-      name: `${token}._domainkey.${domain}`,
-      value: `${token}.${signingHostedZone}`,
-    }));
   }
 }

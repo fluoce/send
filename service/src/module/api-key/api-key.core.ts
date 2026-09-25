@@ -18,7 +18,7 @@ import {
   Logger,
   ServiceUnavailableException,
 } from '@nestjs/common';
-import { ApiKey, database, Domain, tableName } from 'src/config/database';
+import { ApiKey, database, tableName } from 'src/config/database';
 import { UlidService } from 'src/lib/ulid/ulid.service';
 import {
   ApiKeyDto,
@@ -29,9 +29,10 @@ import {
 import { funcTryCatch } from 'src/function/func-try-catch';
 import { funcGenerateApiKey } from 'src/function/func-generate-api-key';
 import { funcBuildUpdateExpression } from 'src/function/func-build-update-expression';
+import { ApiKeyCoreInterface } from './api-key.interface';
 
 @Injectable()
-export class ApiKeyCore {
+export class ApiKeyCore implements ApiKeyCoreInterface {
   private readonly logger = new Logger(ApiKeyCore.name);
 
   constructor(
@@ -45,7 +46,7 @@ export class ApiKeyCore {
     const key = funcGenerateApiKey();
     const now = new Date().toISOString();
 
-    const item = {
+    const item: ApiKey = {
       id,
       workspaceId,
       name,
@@ -113,10 +114,101 @@ export class ApiKeyCore {
       throw new BadRequestException('ApiKey update failed');
     }
 
-    return result.Attributes;
+    return result.Attributes as ApiKey;
   }
 
-  async attachDomain({
+  async deleteApiKey({ apiKeyId, workspaceId }: ApiKeyDto) {
+    const result = await funcTryCatch<DeleteCommandOutput | null, null>({
+      func: () =>
+        this.dynamoDB.send(
+          new DeleteCommand({
+            TableName: tableName.apiKey,
+            Key: {
+              workspaceId,
+              id: apiKeyId,
+            },
+            ConditionExpression:
+              'attribute_exists(workspaceId) AND attribute_exists(id)',
+            ReturnValues: 'ALL_OLD',
+          }),
+        ),
+      logger: this.logger,
+      action: 'deleteApiKey_DeleteCommand',
+    });
+
+    if (!result?.Attributes) {
+      throw new BadRequestException('ApiKey delete failed');
+    }
+
+    return result.Attributes as ApiKey;
+  }
+
+  async getApiKey({ apiKeyId, workspaceId }: ApiKeyDto) {
+    const result = await funcTryCatch<GetCommandOutput | null, null>({
+      func: async () =>
+        await this.dynamoDB.send(
+          new GetCommand({
+            TableName: tableName.apiKey,
+            Key: {
+              workspaceId,
+              id: apiKeyId,
+            },
+          }),
+        ),
+      logger: this.logger,
+      action: 'getApiKey_GetCommand',
+    });
+
+    if (!result || !result.Item) {
+      throw new BadRequestException('ApiKey not found');
+    }
+
+    return result.Item as ApiKey;
+  }
+
+  async getApiKeys({ workspaceId }: { workspaceId: string }) {
+    const result = await funcTryCatch<QueryCommandOutput, null>({
+      func: async () =>
+        await this.dynamoDB.send(
+          new QueryCommand({
+            TableName: tableName.apiKey,
+            KeyConditionExpression: 'workspaceId = :workspaceId',
+            ExpressionAttributeValues: { ':workspaceId': workspaceId },
+          }),
+        ),
+      logger: this.logger,
+      action: `getApiKeys_QueryCommand`,
+    });
+
+    if (!result) {
+      throw new BadRequestException('Failed to get ApiKeys');
+    }
+
+    return result?.Items as ApiKey[];
+  }
+
+  async getApiKeyByKey({ key }: { key: string }) {
+    const result = await funcTryCatch<QueryCommandOutput, null>({
+      func: async () =>
+        await this.dynamoDB.send(
+          new QueryCommand({
+            TableName: tableName.apiKey,
+            KeyConditionExpression: 'key = :key',
+            ExpressionAttributeValues: { ':key': key },
+          }),
+        ),
+      logger: this.logger,
+      action: `getApiKeyByKey_QueryCommand`,
+    });
+
+    if (!result?.Items) {
+      throw new BadRequestException('Failed to get ApiKey');
+    }
+
+    return result?.Items[0] as ApiKey;
+  }
+
+  async attachDomainWithApiKey({
     workspaceId,
     apiKeyId,
     domainId,
@@ -149,97 +241,6 @@ export class ApiKeyCore {
       throw new BadRequestException('Attaching domain to API key failed');
     }
 
-    return result.Attributes;
-  }
-
-  async deleteApiKey({ apiKeyId, workspaceId }: ApiKeyDto) {
-    const result = await funcTryCatch<DeleteCommandOutput | null, null>({
-      func: () =>
-        this.dynamoDB.send(
-          new DeleteCommand({
-            TableName: tableName.apiKey,
-            Key: {
-              workspaceId,
-              id: apiKeyId,
-            },
-            ConditionExpression:
-              'attribute_exists(workspaceId) AND attribute_exists(id)',
-            ReturnValues: 'ALL_OLD',
-          }),
-        ),
-      logger: this.logger,
-      action: 'deleteApiKey_DeleteCommand',
-    });
-
-    if (!result?.Attributes) {
-      throw new BadRequestException('ApiKey delete failed');
-    }
-
-    return result.Attributes;
-  }
-
-  async getApiKey({ apiKeyId, workspaceId }: ApiKeyDto) {
-    const result = await funcTryCatch<GetCommandOutput | null, null>({
-      func: async () =>
-        await this.dynamoDB.send(
-          new GetCommand({
-            TableName: tableName.apiKey,
-            Key: {
-              workspaceId,
-              id: apiKeyId,
-            },
-          }),
-        ),
-      logger: this.logger,
-      action: 'getApiKey_GetCommand',
-    });
-
-    if (!result || !result.Item) {
-      throw new BadRequestException('ApiKey not found');
-    }
-
-    return result.Item;
-  }
-
-  async getApiKeys({ workspaceId }: { workspaceId: string }) {
-    const result = await funcTryCatch<QueryCommandOutput, null>({
-      func: async () =>
-        await this.dynamoDB.send(
-          new QueryCommand({
-            TableName: tableName.apiKey,
-            KeyConditionExpression: 'workspaceId = :workspaceId',
-            ExpressionAttributeValues: { ':workspaceId': workspaceId },
-          }),
-        ),
-      logger: this.logger,
-      action: `getApiKeys_QueryCommand`,
-    });
-
-    if (!result) {
-      throw new BadRequestException('Failed to get ApiKeys');
-    }
-
-    return result?.Items ?? [];
-  }
-
-  async getApiKeyByKey({ key }: { key: string }) {
-    const result = await funcTryCatch<QueryCommandOutput, null>({
-      func: async () =>
-        await this.dynamoDB.send(
-          new QueryCommand({
-            TableName: tableName.apiKey,
-            KeyConditionExpression: 'key = :key',
-            ExpressionAttributeValues: { ':key': key },
-          }),
-        ),
-      logger: this.logger,
-      action: `getApiKeyByKey_QueryCommand`,
-    });
-
-    if (!result) {
-      throw new BadRequestException('Failed to get ApiKey');
-    }
-
-    return result?.Items ?? [];
+    return result.Attributes as ApiKey;
   }
 }

@@ -2,7 +2,7 @@ import { Geist_Mono, Inter } from "next/font/google"
 import "./globals.css"
 import { cn } from "@/lib/utils"
 import { Provider } from "@/provider"
-import { ThemeProvider } from "@/components/theme-provider"
+import { ThemeProvider } from "@/provider/theme/theme-provider"
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" })
 
@@ -28,9 +28,7 @@ export default function RootLayout({
       )}
     >
       <body className="bg-sidebar">
-        <Provider>
-          <ThemeProvider>{children}</ThemeProvider>
-        </Provider>
+        <Provider>{children}</Provider>
       </body>
     </html>
   )

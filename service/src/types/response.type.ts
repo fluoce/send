@@ -1,3 +1,3 @@
-export type ResponseDataType = {
+export type ResponseDataType<T = Record<string, any>> = {
   message?: string;
-} & Record<string, any>;
+} & T;

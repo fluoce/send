@@ -25,9 +25,9 @@ export interface ApiKey {
   key: string;
   domainId?: string | null;
   status: 'ACTIVE' | 'DEACTIVE' | 'SUSPEND';
-  createAt: string;
-  updatedAt: string;
-  expireAt: string;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+  expireAt: string | Date;
 }
 
 export interface DnsRecord {
@@ -43,8 +43,8 @@ export interface Domain {
   status: 'PENDING' | 'VERIFIED' | 'FAILED' | 'DISABLED';
   region: string;
   dnsRecords: DnsRecord[];
-  createAt: string;
-  updatedAt: string;
+  createdAt: string | Date;
+  updatedAt: string | Date;
 }
 
 export interface VerifiedDomain {

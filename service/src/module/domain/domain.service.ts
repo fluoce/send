@@ -137,12 +137,11 @@ export class DomainService {
       domain: Domain;
     }
   > {
-    const verifiedDomain = await this.domainCore.getWorkspaceVerifiedDomainById(
-      {
+    const verifiedDomain =
+      await this.domainCore.getVerifiedDomainByIdForWorkspace({
         domainId,
         workspaceId,
-      },
-    );
+      });
 
     if (!verifiedDomain) {
       throw new BadRequestException(
