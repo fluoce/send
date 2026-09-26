@@ -6,22 +6,20 @@ import { LibModule } from './lib/lib.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtGuard } from './lib/jwt/jwt.guard';
 import { ApiKeyModule } from './module/api-key/api-key.module';
-import { EmailModule } from './module/email/email.module';
-import { SmsModule } from './module/sms/sms.module';
 import { DatabaseModule } from './database/database.module';
 import { WorkspaceModule } from './module/workspace/workspace.module';
 import { DomainModule } from './module/domain/domain.module';
+import { TemplateModule } from './module/template/template.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     LibModule,
-    ApiKeyModule,
-    EmailModule,
-    SmsModule,
     DatabaseModule,
     WorkspaceModule,
+    ApiKeyModule,
     DomainModule,
+    TemplateModule,
   ],
   controllers: [AppController],
   providers: [

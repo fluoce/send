@@ -5,6 +5,7 @@ import { dashboardRoute, externalRoute } from "@/const/route"
 import { useWorkspaceId } from "@/hooks/use-workspace-id"
 import {
   ArrowUpRight,
+  Form,
   Globe,
   Key,
   LayoutDashboard,
@@ -27,16 +28,23 @@ export function AppMenu() {
       }),
     },
     {
-      name: "API Key",
+      name: "API Keys",
       icon: <Key />,
       path: dashboardRoute.apiKey({
         workspaceId,
       }),
     },
     {
-      name: "Domain",
+      name: "Domains",
       icon: <Globe />,
       path: dashboardRoute.domain({
+        workspaceId,
+      }),
+    },
+    {
+      name: "Templates",
+      icon: <Form />,
+      path: dashboardRoute.template({
         workspaceId,
       }),
     },

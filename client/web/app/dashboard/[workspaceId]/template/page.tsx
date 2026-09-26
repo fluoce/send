@@ -1,12 +1,12 @@
 import { PageHeader } from "@/components/shared/page-header"
 import { PageWrapper } from "@/components/shared/page-wrapper"
 
-export default function UpgradePage() {
+export default function TemplatePage() {
   return (
     <PageWrapper>
       <PageHeader
-        title="Upgrade"
-        description="Upgrade your Send workspace to unlock more features."
+        title="Templates"
+        description="Manage your workspace's Templates."
       />
     </PageWrapper>
   )

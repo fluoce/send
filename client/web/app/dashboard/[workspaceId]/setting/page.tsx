@@ -23,7 +23,7 @@ import {
 import { cn } from "cn"
 import { Edit } from "lucide-react"
 
-export default function WorkspaceSetting() {
+export default function SettingPage() {
   const workspaceId = useWorkspaceId()
 
   const { data, isLoading } = useWorkspace({

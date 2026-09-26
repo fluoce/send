@@ -13,6 +13,8 @@ export const dashboardRoute = {
     `${base}/${workspaceId}/api-key`,
   domain: ({ workspaceId }: { workspaceId: string }) =>
     `${base}/${workspaceId}/domain`,
+  template: ({ workspaceId }: { workspaceId: string }) =>
+    `${base}/${workspaceId}/template`,
 }
 
 export const externalRoute = {
