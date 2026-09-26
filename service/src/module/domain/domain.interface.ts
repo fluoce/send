@@ -1,6 +1,7 @@
-import { Domain } from 'src/config/database';
+import { Domain, Workspace } from 'src/config/database';
 import {
   CheckVerifiedDomainDto,
+  CreateDomainBodyDto,
   CreateDomainDto,
   DeleteDomainDto,
   GetDomainDto,
@@ -11,6 +12,7 @@ import {
   GetVerifyedDomainDto,
   GetVerifyedDomainsDto,
   MarkAsFailedDomainDto,
+  UpdateDomainBodyDto,
   UpdateDomainDto,
   VerifyDomainDto,
 } from './domain.dto';
@@ -80,6 +82,46 @@ export interface DomainServiceInterface {
     }>
   >;
   verifyDomain: (p: VerifyDomainDto) => Promise<
+    ResponseDataType<{
+      domain: (Domain & { verified: boolean; awsSesStatus?: string }) | null;
+    }>
+  >;
+}
+
+export interface DomainControllerInterface {
+  createDomain(
+    body: CreateDomainBodyDto,
+    workspace: Workspace,
+  ): Promise<ResponseDataType<{ domain: Domain }>>;
+
+  updateDomain(
+    domainId: Domain['id'],
+    body: UpdateDomainBodyDto,
+    workspace: Workspace,
+  ): Promise<ResponseDataType<{ domain: Domain }>>;
+
+  deleteDomain(
+    domainId: Domain['id'],
+    workspace: Workspace,
+  ): Promise<ResponseDataType<{ domain: Domain }>>;
+
+  getDomains(
+    workspace: Workspace,
+  ): Promise<ResponseDataType<{ domains: Domain[] }>>;
+
+  getVerifiedDomain(
+    workspace: Workspace,
+  ): Promise<ResponseDataType<{ domains: Domain[] }>>;
+
+  getDomain(
+    domainId: Domain['id'],
+    workspace: Workspace,
+  ): Promise<ResponseDataType<{ domain: Domain }>>;
+
+  verifyDomain(
+    domainId: Domain['id'],
+    workspace: Workspace,
+  ): Promise<
     ResponseDataType<{
       domain: (Domain & { verified: boolean; awsSesStatus?: string }) | null;
     }>

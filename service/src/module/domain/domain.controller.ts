@@ -11,12 +11,13 @@ import {
 import { WorkspaceGuard } from '../workspace/workspace.guard';
 import { DomainService } from './domain.service';
 import { Workspace } from 'src/decorator/workspace.decorator';
-import type { Workspace as WorkspaceType } from 'src/config/database';
+import type { Domain, Workspace as WorkspaceType } from 'src/config/database';
 import { CreateDomainBodyDto, UpdateDomainBodyDto } from './domain.dto';
+import { DomainControllerInterface } from './domain.interface';
 
 @UseGuards(WorkspaceGuard)
 @Controller('workspace/:workspaceId/domain')
-export class DomainController {
+export class DomainController implements DomainControllerInterface {
   constructor(private readonly domainService: DomainService) {}
 
   @Post()
@@ -32,7 +33,7 @@ export class DomainController {
 
   @Patch(':domainId')
   async updateDomain(
-    @Param('domainId') domainId: string,
+    @Param('domainId') domainId: Domain['id'],
     @Body() body: UpdateDomainBodyDto,
     @Workspace() workspace: WorkspaceType,
   ) {
@@ -45,7 +46,7 @@ export class DomainController {
 
   @Delete(':domainId')
   async deleteDomain(
-    @Param('domainId') domainId: string,
+    @Param('domainId') domainId: Domain['id'],
     @Workspace() workspace: WorkspaceType,
   ) {
     return await this.domainService.deleteDomain({
@@ -70,7 +71,7 @@ export class DomainController {
 
   @Get(':domainId')
   async getDomain(
-    @Param('domainId') domainId: string,
+    @Param('domainId') domainId: Domain['id'],
     @Workspace() workspace: WorkspaceType,
   ) {
     return await this.domainService.getDomain({
@@ -81,7 +82,7 @@ export class DomainController {
 
   @Patch(':domainId/verify')
   async verifyDomain(
-    @Param('domainId') domainId: string,
+    @Param('domainId') domainId: Domain['id'],
     @Workspace() workspace: WorkspaceType,
   ) {
     return await this.domainService.verifyDomain({

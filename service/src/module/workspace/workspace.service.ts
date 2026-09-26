@@ -3,20 +3,23 @@ import {
   NotFoundException,
   ServiceUnavailableException,
 } from '@nestjs/common';
-import { ResponseDataType } from 'src/types/response.type';
 import {
   CreateWorkspaceDto,
   DeleteWorkspaceDto,
+  GetTrashWorkspacesDto,
+  GetWorkspaceDto,
+  GetWorkspacesDto,
   UpdateWorkspaceDto,
 } from './workspace.dto';
 import { WorkspaceCore } from './workspace.core';
 import { Workspace } from 'src/decorator/workspace.decorator';
+import { WorkspaceServiceInterface } from './workspace.interface';
 
 @Injectable()
-export class WorkspaceService {
+export class WorkspaceService implements WorkspaceServiceInterface {
   constructor(private readonly workspaceCore: WorkspaceCore) {}
 
-  async createWorkspace(data: CreateWorkspaceDto): Promise<ResponseDataType> {
+  async createWorkspace(data: CreateWorkspaceDto) {
     const workspace = await this.workspaceCore.createWorkspace(data);
     if (!workspace) {
       throw new ServiceUnavailableException('Unable to create workspace');
@@ -27,7 +30,7 @@ export class WorkspaceService {
     };
   }
 
-  async updateWorkspace(data: UpdateWorkspaceDto): Promise<ResponseDataType> {
+  async updateWorkspace(data: UpdateWorkspaceDto) {
     const workspace = await this.workspaceCore.updateWorkspace(data);
     if (!workspace) {
       throw new NotFoundException('Workspace not found or has been deleted');
@@ -38,13 +41,20 @@ export class WorkspaceService {
     };
   }
 
-  async getWorkspace({
-    userId,
-    workspaceId,
-  }: {
-    userId: string;
-    workspaceId: string;
-  }): Promise<ResponseDataType> {
+  async deleteWorkspace(data: DeleteWorkspaceDto) {
+    const workspace = await this.workspaceCore.deleteWorkspace(data);
+    if (!Workspace) {
+      throw new NotFoundException(
+        'Workspace not found or could not be permanently deleted',
+      );
+    }
+    return {
+      workspace,
+      message: 'workspace permanently deleted',
+    };
+  }
+
+  async getWorkspace({ userId, workspaceId }: GetWorkspaceDto) {
     const workspace = await this.workspaceCore.getWorkspace({
       userId,
       workspaceId,
@@ -58,11 +68,7 @@ export class WorkspaceService {
     };
   }
 
-  async getWorkspaces({
-    userId,
-  }: {
-    userId: string;
-  }): Promise<ResponseDataType> {
+  async getWorkspaces({ userId }: GetWorkspacesDto) {
     const workspaces = await this.workspaceCore.getWorkspaces({
       userId,
     });
@@ -75,11 +81,7 @@ export class WorkspaceService {
     };
   }
 
-  async getTrashWorkspaces({
-    userId,
-  }: {
-    userId: string;
-  }): Promise<ResponseDataType> {
+  async getTrashWorkspaces({ userId }: GetTrashWorkspacesDto) {
     const workspaces = await this.workspaceCore.getTrashWorkspaces({
       userId,
     });
@@ -89,19 +91,6 @@ export class WorkspaceService {
     return {
       workspaces,
       message: 'Trash workspaces fetched successfully',
-    };
-  }
-
-  async deleteWorkspace(data: DeleteWorkspaceDto): Promise<ResponseDataType> {
-    const workspace = await this.workspaceCore.deleteWorkspace(data);
-    if (!Workspace) {
-      throw new NotFoundException(
-        'Workspace not found or could not be permanently deleted',
-      );
-    }
-    return {
-      workspace,
-      message: 'workspace permanently deleted',
     };
   }
 }

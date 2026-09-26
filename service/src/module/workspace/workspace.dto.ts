@@ -1,15 +1,16 @@
 import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { Workspace } from 'src/config/database';
 
 export class CreateWorkspaceBodyDto {
   @IsNotEmpty()
   @IsString()
-  name?: string;
+  name!: string;
 }
 
 export class CreateWorkspaceDto extends CreateWorkspaceBodyDto {
   @IsNotEmpty()
   @IsString()
-  userId?: string;
+  userId!: string;
 }
 
 export class UpdateWorkspaceBodyDto {
@@ -29,19 +30,51 @@ export class UpdateWorkspaceBodyDto {
 export class UpdateWorkspaceDto extends UpdateWorkspaceBodyDto {
   @IsNotEmpty()
   @IsString()
-  workspaceId?: string;
+  workspaceId!: string;
 
   @IsNotEmpty()
   @IsString()
-  userId?: string;
+  userId!: string;
 }
 
 export class DeleteWorkspaceDto {
   @IsNotEmpty()
   @IsString()
-  workspaceId?: string;
+  workspaceId!: string;
 
   @IsNotEmpty()
   @IsString()
-  userId?: string;
+  userId!: string;
+}
+
+export class GetWorkspaceDto {
+  @IsNotEmpty()
+  @IsString()
+  workspaceId!: string;
+
+  @IsNotEmpty()
+  @IsString()
+  userId!: string;
+}
+
+export class GetWorkspacesDto {
+  @IsNotEmpty()
+  @IsString()
+  userId!: string;
+}
+
+export class GetTrashWorkspacesDto {
+  @IsNotEmpty()
+  @IsString()
+  userId!: string;
+}
+
+export class GetWorkspacesByStatusDto {
+  @IsNotEmpty()
+  @IsString()
+  userId!: string;
+
+  @IsOptional()
+  @IsString()
+  status?: Workspace['status'];
 }

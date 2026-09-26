@@ -21,13 +21,18 @@ import { UlidService } from 'src/lib/ulid/ulid.service';
 import {
   CreateWorkspaceDto,
   DeleteWorkspaceDto,
+  GetTrashWorkspacesDto,
+  GetWorkspaceDto,
+  GetWorkspacesByStatusDto,
+  GetWorkspacesDto,
   UpdateWorkspaceDto,
 } from './workspace.dto';
 import { funcTryCatch } from 'src/function/func-try-catch';
 import { funcBuildUpdateExpression } from 'src/function/func-build-update-expression';
+import { WorkspaceCoreInterface } from './workspace.interface';
 
 @Injectable()
-export class WorkspaceCore {
+export class WorkspaceCore implements WorkspaceCoreInterface {
   private readonly logger = new Logger(WorkspaceCore.name);
 
   constructor(
@@ -39,7 +44,7 @@ export class WorkspaceCore {
   async createWorkspace({ name, userId }: CreateWorkspaceDto) {
     const date = new Date().toISOString();
     const id = this.ulid.workspaceId();
-    const item = {
+    const item: Workspace = {
       id,
       userId,
       name,
@@ -103,50 +108,7 @@ export class WorkspaceCore {
       throw new BadRequestException('Workspace update failed');
     }
 
-    return result.Attributes;
-  }
-
-  async getWorkspace({
-    userId,
-    workspaceId,
-  }: {
-    userId: string;
-    workspaceId: string;
-  }) {
-    const result = await funcTryCatch<GetCommandOutput | null, null>({
-      func: async () =>
-        await this.dynamoDB.send(
-          new GetCommand({
-            TableName: tableName.workspace,
-            Key: {
-              userId,
-              id: workspaceId,
-            },
-          }),
-        ),
-
-      logger: this.logger,
-      action: 'getWorkspace_GetCommand',
-    });
-
-    if (!result?.Item) {
-      return null;
-    }
-
-    return result.Item;
-  }
-
-  async getWorkspaces({ userId }: { userId: string }) {
-    return await this.queryWorkspacesByStatus({
-      userId,
-    });
-  }
-
-  async getTrashWorkspaces({ userId }: { userId: string }) {
-    return await this.queryWorkspacesByStatus({
-      status: 'DEACTIVE',
-      userId,
-    });
+    return result.Attributes as Workspace;
   }
 
   async deleteWorkspace({ userId, workspaceId }: DeleteWorkspaceDto) {
@@ -173,16 +135,47 @@ export class WorkspaceCore {
       throw new BadRequestException('Workspace delete failed');
     }
 
-    return result.Attributes;
+    return result.Attributes as Workspace;
   }
 
-  private async queryWorkspacesByStatus({
-    userId,
-    status,
-  }: {
-    userId: string;
-    status?: Workspace['status'];
-  }) {
+  async getWorkspace({ userId, workspaceId }: GetWorkspaceDto) {
+    const result = await funcTryCatch<GetCommandOutput | null, null>({
+      func: async () =>
+        await this.dynamoDB.send(
+          new GetCommand({
+            TableName: tableName.workspace,
+            Key: {
+              userId,
+              id: workspaceId,
+            },
+          }),
+        ),
+
+      logger: this.logger,
+      action: 'getWorkspace_GetCommand',
+    });
+
+    if (!result?.Item) {
+      return null;
+    }
+
+    return result.Item as Workspace;
+  }
+
+  async getWorkspaces({ userId }: GetWorkspacesDto) {
+    return await this.getWorkspacesByStatus({
+      userId,
+    });
+  }
+
+  async getTrashWorkspaces({ userId }: GetTrashWorkspacesDto) {
+    return await this.getWorkspacesByStatus({
+      status: 'DEACTIVE',
+      userId,
+    });
+  }
+
+  async getWorkspacesByStatus({ userId, status }: GetWorkspacesByStatusDto) {
     const hasStatus = typeof status !== 'undefined';
 
     const queryInput: any = {

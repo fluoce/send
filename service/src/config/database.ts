@@ -14,8 +14,8 @@ export interface Workspace {
   userId: string;
   name: string;
   status: 'ACTIVE' | 'DEACTIVE';
-  createAt: string;
-  updatedAt: string;
+  createdAt: string | Date;
+  updatedAt: string | Date;
 }
 
 export interface ApiKey {

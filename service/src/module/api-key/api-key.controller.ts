@@ -16,11 +16,15 @@ import {
 } from './api-key.dto';
 import { WorkspaceGuard } from '../workspace/workspace.guard';
 import { Workspace } from 'src/decorator/workspace.decorator';
-import { type Workspace as WorkspaceType } from 'src/config/database';
+import {
+  type ApiKey,
+  type Workspace as WorkspaceType,
+} from 'src/config/database';
+import { ApiKeyControllerInterface } from './api-key.interface';
 
 @UseGuards(WorkspaceGuard)
 @Controller('workspace/:workspaceId/api-key')
-export class ApiKeyController {
+export class ApiKeyController implements ApiKeyControllerInterface {
   constructor(private readonly apiKeyService: ApiKeyService) {}
 
   @Post()
@@ -37,7 +41,7 @@ export class ApiKeyController {
 
   @Patch(':apiKeyId')
   async updateApiKey(
-    @Param('apiKeyId') apiKeyId: string,
+    @Param('apiKeyId') apiKeyId: ApiKey['id'],
     @Body() data: UpdateApiKeyBodyDto,
     @Workspace() workspace: WorkspaceType,
   ) {
@@ -52,7 +56,7 @@ export class ApiKeyController {
 
   @Patch(':apiKeyId/domain')
   async attachDomainWithApiKey(
-    @Param('apiKeyId') apiKeyId: string,
+    @Param('apiKeyId') apiKeyId: ApiKey['id'],
     @Body() body: AttachDomainWithApiKeyBodyDto,
     @Workspace() workspace: WorkspaceType,
   ) {
@@ -65,7 +69,7 @@ export class ApiKeyController {
 
   @Delete(':apiKeyId')
   async deleteApiKey(
-    @Param('apiKeyId') apiKeyId: string,
+    @Param('apiKeyId') apiKeyId: ApiKey['id'],
     @Workspace() workspace: WorkspaceType,
   ) {
     return this.apiKeyService.deleteApiKey({
@@ -76,7 +80,7 @@ export class ApiKeyController {
 
   @Get(':apiKeyId')
   async getApiKey(
-    @Param('apiKeyId') apiKeyId: string,
+    @Param('apiKeyId') apiKeyId: ApiKey['id'],
     @Workspace() workspace: WorkspaceType,
   ) {
     return this.apiKeyService.getApiKey({

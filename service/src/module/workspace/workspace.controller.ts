@@ -18,9 +18,10 @@ import {
 import { WorkspaceGuard } from './workspace.guard';
 import { Workspace } from 'src/decorator/workspace.decorator';
 import type { Workspace as WorkpsaceType } from 'src/config/database';
+import { WorkspaceControllerInterface } from './workspace.interface';
 
 @Controller('workspace')
-export class WorkspaceController {
+export class WorkspaceController implements WorkspaceControllerInterface {
   constructor(private readonly workspaceService: WorkspaceService) {}
 
   @Post()
@@ -56,6 +57,15 @@ export class WorkspaceController {
     });
   }
 
+  @UseGuards(WorkspaceGuard)
+  @Delete(':workspaceId')
+  async deleteWorkspace(@Workspace() workspace: WorkpsaceType) {
+    return await this.workspaceService.deleteWorkspace({
+      userId: workspace.userId,
+      workspaceId: workspace.id,
+    });
+  }
+
   @Get(':workspaceId')
   async getWorkspace(
     @Param('workspaceId') workspaceId: string,
@@ -71,15 +81,6 @@ export class WorkspaceController {
   async getWorkspaces(@User() user: UserPayload) {
     return await this.workspaceService.getWorkspaces({
       userId: user.sub,
-    });
-  }
-
-  @UseGuards(WorkspaceGuard)
-  @Delete(':workspaceId')
-  async deleteWorkspace(@Workspace() workspace: WorkpsaceType) {
-    return await this.workspaceService.deleteWorkspace({
-      userId: workspace.userId,
-      workspaceId: workspace.id,
     });
   }
 }
