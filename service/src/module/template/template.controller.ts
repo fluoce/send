@@ -1,6 +1,14 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { TemplateControllerInterface } from './template.interface';
-import { CreateTemplateBodyDto } from './template.dto';
+import { CreateTemplateBodyDto, DeleteTemplateDto } from './template.dto';
 import type { Workspace as WorkspaceType } from 'src/config/database';
 import { WorkspaceGuard } from '../workspace/workspace.guard';
 import { TemplateService } from './template.service';
@@ -18,6 +26,35 @@ export class TemplateController implements TemplateControllerInterface {
   ) {
     return await this.templateService.createTemplate({
       name: body.name,
+      workspaceId: workspace.id,
+    });
+  }
+
+  @Delete()
+  async deleteTemplate(
+    @Body() body: DeleteTemplateDto,
+    @Workspace() workspace: WorkspaceType,
+  ) {
+    return await this.templateService.deleteTemplate({
+      templateId: body.templateId,
+      workspaceId: workspace.id,
+    });
+  }
+
+  @Get(':templateId')
+  async getTemplate(
+    @Param() templateId: string,
+    @Workspace() workspace: WorkspaceType,
+  ) {
+    return await this.templateService.getTemplate({
+      templateId,
+      workspaceId: workspace.id,
+    });
+  }
+
+  @Get()
+  async getTemplates(@Workspace() workspace: WorkspaceType) {
+    return await this.templateService.getTemplates({
       workspaceId: workspace.id,
     });
   }

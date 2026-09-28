@@ -27,3 +27,14 @@ export const domainQueryKey = {
   ],
   domain: ({ domainId }: { domainId: string }) => ["domain", `${domainId}`],
 }
+
+export const templateQueryKey = {
+  templates: ({ workspaceId }: { workspaceId: string }) => [
+    "templates",
+    `${workspaceId}`,
+  ],
+  template: ({ templateId }: { templateId: string }) => [
+    "template",
+    `${templateId}`,
+  ],
+}

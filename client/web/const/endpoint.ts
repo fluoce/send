@@ -79,3 +79,22 @@ export const domainEndpoint = {
     domainId: string
   }) => `${domainBase({ workspaceId })}/${domainId}/verify`,
 }
+
+const templateBase = ({ workspaceId }: { workspaceId: string }) =>
+  `/workspace/${workspaceId}/template`
+
+export const templateEndpoint = {
+  get: ({
+    workspaceId,
+    templateId,
+  }: {
+    workspaceId: string
+    templateId: string
+  }) => `${templateBase({ workspaceId })}/${templateId}`,
+  getAll: ({ workspaceId }: { workspaceId: string }) =>
+    templateBase({ workspaceId }),
+  create: ({ workspaceId }: { workspaceId: string }) =>
+    templateBase({ workspaceId }),
+  delete: ({ workspaceId }: { workspaceId: string }) =>
+    templateBase({ workspaceId }),
+}
