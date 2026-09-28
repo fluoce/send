@@ -68,7 +68,14 @@ export function AppMenu() {
             workspaceId,
           })}
         >
-          <Button variant="ghost" size="lg">
+          <Button
+            variant={
+              path === dashboardRoute.upgrade({ workspaceId })
+                ? "secondary"
+                : "ghost"
+            }
+            size="lg"
+          >
             <Sparkle className="text-primary" /> Upgrade
           </Button>
         </Link>

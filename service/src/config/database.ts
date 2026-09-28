@@ -53,3 +53,24 @@ export interface VerifiedDomain {
   domainId: string;
   verifiedAt: string;
 }
+
+export interface TemplateVariable {
+  name: string;
+  required: boolean;
+  type: 'string' | 'number' | 'boolean';
+  defaultValue?: string | number | boolean;
+}
+
+export interface Template {
+  id: string;
+  workspaceId: string;
+  name: string;
+  status: 'PUBLISH' | 'DRAFT';
+  form: string;
+  replyTo?: string;
+  subject: string;
+  html: string;
+  variables: TemplateVariable[];
+  createdAt: string | Date;
+  updatedAt: string | Date;
+}
