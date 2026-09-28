@@ -52,7 +52,7 @@ export default function ApikeyPage() {
           title="Create API key"
           description="let's create your first api key"
         >
-          <Link href={externalRoute.sendDocs} tabIndex={-1}>
+          <Link href={externalRoute.sendDocs} tabIndex={-1} target="_blank">
             <Button variant="secondary">
               <ArrowUpRight /> Documentation
             </Button>

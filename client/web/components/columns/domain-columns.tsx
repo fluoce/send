@@ -1,11 +1,7 @@
 "use client"
 
 import { createColumnHelper } from "@tanstack/react-table"
-import {
-  DomainStatus,
-  DomainStatusType,
-  DomainType,
-} from "@/types/data/domain-data"
+import { DomainStatusType, DomainType } from "@/types/data/domain-data"
 import { Button } from "../ui/button"
 import {
   Ban,
@@ -30,7 +26,6 @@ import { useDomainUpdate } from "@/hooks/use-domain"
 import { useWorkspaceId } from "@/hooks/use-workspace-id"
 import { Spinner } from "../ui/spinner"
 import { VerifyDomain } from "../form/verify-domain"
-import { Badge } from "../ui/badge"
 
 const columnHelper = createColumnHelper<
   DataTableFeatures,
