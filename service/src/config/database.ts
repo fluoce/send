@@ -7,6 +7,7 @@ export const tableName = {
   apiKey: 'send_api_key',
   domain: 'send_domain',
   verifiedDomain: 'send_verified_domain',
+  template: 'template',
 };
 
 export interface Workspace {
@@ -66,11 +67,12 @@ export interface Template {
   workspaceId: string;
   name: string;
   status: 'PUBLISH' | 'DRAFT';
-  form: string;
+  form: string | null;
   replyTo?: string;
-  subject: string;
-  html: string;
-  variables: TemplateVariable[];
+  subject: string | null;
+  html: string | null;
+  text?: string;
+  variables: TemplateVariable[] | null;
   createdAt: string | Date;
   updatedAt: string | Date;
 }
