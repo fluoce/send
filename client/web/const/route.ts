@@ -1,4 +1,5 @@
 const base = "/dashboard"
+const templateEditBase = "/template-editor"
 
 export const dashboardRoute = {
   base,
@@ -21,7 +22,7 @@ export const dashboardRoute = {
   }: {
     workspaceId: string
     templateId: string
-  }) => `${base}/${workspaceId}/template/${templateId}`,
+  }) => `${base}${templateEditBase}/${workspaceId}/template/${templateId}`,
 }
 
 export const externalRoute = {

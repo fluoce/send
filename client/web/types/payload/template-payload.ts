@@ -4,5 +4,8 @@ export type TemplateCreateType = {
 
 export type TemplateUpdateType = {
   name?: string
-  status: "PUBLISH" | "DRAFT"
+  status?: "PUBLISH" | "DRAFT"
+  from?: string | null
+  replyTo?: string
+  subject?: string | null
 }

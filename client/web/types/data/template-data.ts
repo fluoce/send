@@ -12,7 +12,7 @@ export type TemplateType = {
   workspaceId: string
   name: string
   status: TemplateStatusType
-  form: string | null
+  from: string | null
   replyTo?: string
   subject: string | null
   html: string | null

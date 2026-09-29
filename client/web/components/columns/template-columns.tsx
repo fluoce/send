@@ -8,7 +8,7 @@ import {
   Copy,
   Edit,
   EllipsisVertical,
-  PencilLine,
+  Pencil,
   Trash2,
 } from "lucide-react"
 import { funcTrunc } from "@/func/func-trunc"
@@ -79,7 +79,7 @@ export const TemplateColumns = columnHelper.columns([
       )
     },
   }),
-  columnHelper.accessor("form", {
+  columnHelper.accessor("from", {
     header: "From",
     cell: (info) => {
       const value = info.getValue()
@@ -91,7 +91,7 @@ export const TemplateColumns = columnHelper.columns([
     cell: (info) => {
       const status = info.getValue() as "PUBLISH" | "DRAFT"
       const colorClass =
-        status === "PUBLISH" ? "text-blue-500" : "text-muted-foreground"
+        status === "PUBLISH" ? "text-green-500" : "text-muted-foreground"
       return (
         <div className="flex items-center gap-2">
           <span className={colorClass}>{status}</span>
@@ -124,14 +124,14 @@ export const TemplateColumns = columnHelper.columns([
                 )
               }
             >
-              <Edit /> Edit
+              <Edit /> Edit Template
             </DropdownMenuItem>
             <DropdownMenuSub>
               <DropdownMenuSubTrigger>
                 {template?.status == "PUBLISH" ? (
-                  <CircleCheck />
+                  <CircleCheck className="text-green-500" />
                 ) : (
-                  <PencilLine />
+                  <Pencil />
                 )}
                 {template?.status}
               </DropdownMenuSubTrigger>

@@ -11,13 +11,13 @@ import { Nodata } from "@/components/ui/no-data"
 import { externalRoute } from "@/const/route"
 import { useDomains } from "@/hooks/use-domain"
 import { useWorkspaceId } from "@/hooks/use-workspace-id"
-import { ArrowUpRight, Globe, Plus } from "lucide-react"
+import { ArrowUpRight, Globe, Plus, RotateCcw } from "lucide-react"
 import Link from "next/link"
 
 export default function DomainPage() {
   const workspaceId = useWorkspaceId()
 
-  const { data, isLoading } = useDomains({
+  const { data, isLoading, refetch, isRefetching } = useDomains({
     workspaceId,
   })
 
@@ -32,11 +32,22 @@ export default function DomainPage() {
           title="Domains"
           description="Manage your workspace's Domains."
         />
-        <CreateUpdateDomain>
-          <Button>
-            <Plus /> Domain
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => refetch()}
+            disabled={isRefetching}
+            className="opacity"
+          >
+            <RotateCcw className={isRefetching ? "animate-spin" : undefined} />
           </Button>
-        </CreateUpdateDomain>
+          <CreateUpdateDomain>
+            <Button>
+              <Plus /> Domain
+            </Button>
+          </CreateUpdateDomain>
+        </div>
       </div>
       {data?.data?.domains?.length ? (
         <DataTable

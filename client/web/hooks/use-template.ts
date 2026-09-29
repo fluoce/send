@@ -29,6 +29,7 @@ export function useTemplate({
         }),
         method: "GET",
       }),
+    enabled: Boolean(templateId && workspaceId),
   })
 }
 

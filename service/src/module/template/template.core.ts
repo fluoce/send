@@ -41,7 +41,7 @@ export class TemplateCore implements TemplateCoreInterface {
       workspaceId,
       name,
       status: 'DRAFT',
-      form: null,
+      from: null,
       subject: null,
       html: null,
       variables: null,
@@ -56,7 +56,7 @@ export class TemplateCore implements TemplateCoreInterface {
             TableName: tableName.template,
             Item: item,
             ConditionExpression:
-              'attribute_not_exists(workspaceId) AND attribute_not_exists(id)',
+              'attribute_not_exists(id) AND attribute_not_exists(workspaceId)',
           }),
         ),
       logger: this.logger,
@@ -74,6 +74,9 @@ export class TemplateCore implements TemplateCoreInterface {
     templateId,
     name,
     status,
+    from,
+    replyTo,
+    subject,
     workspaceId,
   }: UpdateTemplateMetaDto) {
     const {
@@ -83,6 +86,9 @@ export class TemplateCore implements TemplateCoreInterface {
     } = funcBuildUpdateExpression({
       name,
       status,
+      from,
+      replyTo,
+      subject,
     });
 
     const result = await funcTryCatch<UpdateCommandOutput | null, null>({
@@ -91,8 +97,8 @@ export class TemplateCore implements TemplateCoreInterface {
           new UpdateCommand({
             TableName: tableName.template,
             Key: {
-              id: templateId,
               workspaceId,
+              id: templateId,
             },
             UpdateExpression,
             ExpressionAttributeNames,
@@ -126,11 +132,11 @@ export class TemplateCore implements TemplateCoreInterface {
           new DeleteCommand({
             TableName: tableName.template,
             Key: {
-              id: templateId,
               workspaceId,
+              id: templateId,
             },
             ConditionExpression:
-              'attribute_exists(id) AND attribute_exists(workspaceId)',
+              'attribute_exists(workspaceId) AND attribute_exists(id)',
             ReturnValues: 'ALL_OLD',
           }),
         ),

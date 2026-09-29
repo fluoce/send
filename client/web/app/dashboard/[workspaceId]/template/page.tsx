@@ -11,13 +11,13 @@ import { Nodata } from "@/components/ui/no-data"
 import { externalRoute } from "@/const/route"
 import { useTemplates } from "@/hooks/use-template"
 import { useWorkspaceId } from "@/hooks/use-workspace-id"
-import { ArrowUpRight, Form, Plus } from "lucide-react"
+import { ArrowUpRight, Form, Plus, RotateCcw } from "lucide-react"
 import Link from "next/link"
 
 export default function TemplatePage() {
   const workspaceId = useWorkspaceId()
 
-  const { data, isLoading } = useTemplates({
+  const { data, isLoading, refetch, isRefetching } = useTemplates({
     workspaceId,
   })
 
@@ -34,11 +34,22 @@ export default function TemplatePage() {
           title="Templates"
           description="Manage your workspace's Templates."
         />
-        <CreateTemplate>
-          <Button>
-            <Plus /> Template
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => refetch()}
+            disabled={isRefetching}
+            className="opacity"
+          >
+            <RotateCcw className={isRefetching ? "animate-spin" : undefined} />
           </Button>
-        </CreateTemplate>
+          <CreateTemplate>
+            <Button>
+              <Plus /> Template
+            </Button>
+          </CreateTemplate>
+        </div>
       </div>
       {data?.data?.templates?.length ? (
         <DataTable

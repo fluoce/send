@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/sonner"
 import { ReactNode } from "react"
 import { TanstackProvider } from "./tanstack/tanstack-provider"
 import { ThemeProvider } from "./theme/theme-provider"
+import { TemplateEditorProvider } from "@/context/template-editor-context"
 
 export function Provider({ children }: { children: ReactNode }) {
   return (

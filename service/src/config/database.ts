@@ -67,7 +67,7 @@ export interface Template {
   workspaceId: string;
   name: string;
   status: 'PUBLISH' | 'DRAFT';
-  form: string | null;
+  from: string | null;
   replyTo?: string;
   subject: string | null;
   html: string | null;

@@ -36,7 +36,7 @@ export class TemplateController implements TemplateControllerInterface {
 
   @Patch(':templateId')
   async updateTemplateMeta(
-    @Param() templateId: string,
+    @Param('templateId') templateId: string,
     @Body() body: UpdateTemplateMetaBodyDto,
     @Workspace() workspace: WorkspaceType,
   ) {
@@ -44,13 +44,16 @@ export class TemplateController implements TemplateControllerInterface {
       templateId,
       name: body.name,
       status: body.status,
+      from: body.from,
+      replyTo: body.replyTo,
+      subject: body.subject,
       workspaceId: workspace.id,
     });
   }
 
   @Delete(':templateId')
   async deleteTemplate(
-    @Param() templateId: string,
+    @Param('templateId') templateId: string,
     @Workspace() workspace: WorkspaceType,
   ) {
     return await this.templateService.deleteTemplate({
@@ -61,7 +64,7 @@ export class TemplateController implements TemplateControllerInterface {
 
   @Get(':templateId')
   async getTemplate(
-    @Param() templateId: string,
+    @Param('templateId') templateId: string,
     @Workspace() workspace: WorkspaceType,
   ) {
     return await this.templateService.getTemplate({

@@ -23,6 +23,18 @@ export class UpdateTemplateMetaBodyDto {
     message: 'status must be one of the following values: PUBLISH, DRAFT',
   })
   status?: Template['status'];
+
+  @IsOptional()
+  @IsString()
+  from?: string | null;
+
+  @IsOptional()
+  @IsString()
+  replyTo?: string;
+
+  @IsOptional()
+  @IsString()
+  subject?: string | null;
 }
 
 export class UpdateTemplateMetaDto extends UpdateTemplateMetaBodyDto {

@@ -11,13 +11,13 @@ import { Nodata } from "@/components/ui/no-data"
 import { externalRoute } from "@/const/route"
 import { useApiKeys } from "@/hooks/use-api-key"
 import { useWorkspaceId } from "@/hooks/use-workspace-id"
-import { ArrowUpRight, Key, Plus } from "lucide-react"
+import { ArrowUpRight, Key, Plus, RotateCcw } from "lucide-react"
 import Link from "next/link"
 
 export default function ApikeyPage() {
   const workspaceId = useWorkspaceId()
 
-  const { data, isLoading } = useApiKeys({
+  const { data, isLoading, refetch, isRefetching } = useApiKeys({
     workspaceId,
   })
 
@@ -32,11 +32,22 @@ export default function ApikeyPage() {
           title="API Keys"
           description="Manage your workspace's API keys."
         />
-        <CreateUpdateApiKey>
-          <Button>
-            <Plus /> API Key
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => refetch()}
+            disabled={isRefetching}
+            className="opacity"
+          >
+            <RotateCcw className={isRefetching ? "animate-spin" : undefined} />
           </Button>
-        </CreateUpdateApiKey>
+          <CreateUpdateApiKey>
+            <Button>
+              <Plus /> API Key
+            </Button>
+          </CreateUpdateApiKey>
+        </div>
       </div>
       {data?.data?.apiKeys?.length ? (
         <DataTable

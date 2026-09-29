@@ -31,7 +31,13 @@ export class TemplateService implements TemplateServiceInterface {
   }
 
   async updateTemplateMeta(body: UpdateTemplateMetaDto) {
-    if (!body?.name && !body.status) {
+    if (
+      !body.name &&
+      !body.status &&
+      !body.from &&
+      !body.replyTo &&
+      !body.subject
+    ) {
       throw new BadRequestException(
         'At least one field is required to update the template',
       );
