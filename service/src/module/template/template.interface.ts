@@ -48,7 +48,7 @@ export interface TemplateControllerInterface {
     }>
   >;
   deleteTemplate: (
-    body: DeleteTemplateDto,
+    templateId: string,
     workspace: Workspace,
   ) => Promise<
     ResponseDataType<{

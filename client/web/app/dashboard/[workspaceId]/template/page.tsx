@@ -21,6 +21,8 @@ export default function TemplatePage() {
     workspaceId,
   })
 
+  console.log(data?.data)
+
   if (isLoading) {
     return <PageSpinner />
   }

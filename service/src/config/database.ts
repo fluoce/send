@@ -7,7 +7,7 @@ export const tableName = {
   apiKey: 'send_api_key',
   domain: 'send_domain',
   verifiedDomain: 'send_verified_domain',
-  template: 'template',
+  template: 'send_template',
 };
 
 export interface Workspace {

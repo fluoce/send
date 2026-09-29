@@ -2,7 +2,7 @@
 
 import { createColumnHelper } from "@tanstack/react-table"
 import { Button } from "../ui/button"
-import { CheckCheck, Copy, EllipsisVertical, Trash2 } from "lucide-react"
+import { CheckCheck, Copy, Edit, EllipsisVertical, Trash2 } from "lucide-react"
 import { funcTrunc } from "@/func/func-trunc"
 import { DataTableFeatures } from "@/types/common/data-table-features"
 import {
@@ -14,6 +14,10 @@ import {
 import { TemplateType } from "@/types/data/template-data"
 import { useCopy } from "@/hooks/use-copy"
 import { DeleteTemplate } from "../form/delete-template"
+import Link from "next/link"
+import { useWorkspaceId } from "@/hooks/use-workspace-id"
+import { dashboardRoute } from "@/const/route"
+import { useRouter } from "next/navigation"
 
 const columnHelper = createColumnHelper<
   DataTableFeatures,
@@ -30,7 +34,7 @@ export const TemplateColumns = columnHelper.columns([
         text: info.getValue(),
       })
       return (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <span>{funcTrunc(info.getValue())}</span>
           <Button
             onClick={() => copy()}
@@ -46,13 +50,27 @@ export const TemplateColumns = columnHelper.columns([
   }),
   columnHelper.accessor("name", {
     header: "Name",
-    cell: (info) => funcTrunc(info.getValue()),
+    cell: (info) => {
+      const templateId = info?.row?.original?.id
+      const workspaceId = useWorkspaceId()
+      return (
+        <Link
+          href={dashboardRoute.templateEdit({
+            templateId,
+            workspaceId,
+          })}
+          className="text-blue-500 hover:underline"
+        >
+          {funcTrunc(info.getValue())}
+        </Link>
+      )
+    },
   }),
   columnHelper.accessor("form", {
     header: "From",
     cell: (info) => {
       const value = info.getValue()
-      return value ? funcTrunc(value) : null
+      return value ? funcTrunc(value) : "~"
     },
   }),
   columnHelper.accessor("status", {
@@ -71,7 +89,9 @@ export const TemplateColumns = columnHelper.columns([
   columnHelper.accessor("action", {
     header: "Action",
     cell: (info) => {
+      const router = useRouter()
       const template = info?.row?.original
+      const workspaceId = useWorkspaceId()
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -80,6 +100,18 @@ export const TemplateColumns = columnHelper.columns([
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
+            <DropdownMenuItem
+              onClick={() =>
+                router.push(
+                  dashboardRoute.templateEdit({
+                    templateId: template.id,
+                    workspaceId,
+                  })
+                )
+              }
+            >
+              <Edit /> Edit
+            </DropdownMenuItem>
             <DeleteTemplate template={template}>
               <DropdownMenuItem
                 variant="destructive"

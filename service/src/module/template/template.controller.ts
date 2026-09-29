@@ -8,7 +8,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { TemplateControllerInterface } from './template.interface';
-import { CreateTemplateBodyDto, DeleteTemplateDto } from './template.dto';
+import { CreateTemplateBodyDto } from './template.dto';
 import type { Workspace as WorkspaceType } from 'src/config/database';
 import { WorkspaceGuard } from '../workspace/workspace.guard';
 import { TemplateService } from './template.service';
@@ -30,13 +30,13 @@ export class TemplateController implements TemplateControllerInterface {
     });
   }
 
-  @Delete()
+  @Delete(':templateId')
   async deleteTemplate(
-    @Body() body: DeleteTemplateDto,
+    @Param() templateId: string,
     @Workspace() workspace: WorkspaceType,
   ) {
     return await this.templateService.deleteTemplate({
-      templateId: body.templateId,
+      templateId,
       workspaceId: workspace.id,
     });
   }

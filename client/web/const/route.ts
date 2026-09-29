@@ -15,6 +15,13 @@ export const dashboardRoute = {
     `${base}/${workspaceId}/domain`,
   template: ({ workspaceId }: { workspaceId: string }) =>
     `${base}/${workspaceId}/template`,
+  templateEdit: ({
+    workspaceId,
+    templateId,
+  }: {
+    workspaceId: string
+    templateId: string
+  }) => `${base}/${workspaceId}/template/${templateId}`,
 }
 
 export const externalRoute = {

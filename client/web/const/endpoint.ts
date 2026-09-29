@@ -95,6 +95,11 @@ export const templateEndpoint = {
     templateBase({ workspaceId }),
   create: ({ workspaceId }: { workspaceId: string }) =>
     templateBase({ workspaceId }),
-  delete: ({ workspaceId }: { workspaceId: string }) =>
-    templateBase({ workspaceId }),
+  delete: ({
+    workspaceId,
+    templateId,
+  }: {
+    workspaceId: string
+    templateId: string
+  }) => `${templateBase({ workspaceId })}/${templateId}`,
 }

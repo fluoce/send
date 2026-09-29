@@ -80,11 +80,11 @@ export class TemplateCore implements TemplateCoreInterface {
           new DeleteCommand({
             TableName: tableName.template,
             Key: {
-              workspaceId,
               id: templateId,
+              workspaceId,
             },
             ConditionExpression:
-              'attribute_exists(workspaceId) AND attribute_exists(id)',
+              'attribute_exists(id) AND attribute_exists(workspaceId)',
             ReturnValues: 'ALL_OLD',
           }),
         ),

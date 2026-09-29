@@ -81,9 +81,8 @@ export function useTemplateDelete() {
       templateId: string
     }) =>
       f({
-        endpoint: templateEndpoint.delete({ workspaceId }),
+        endpoint: templateEndpoint.delete({ workspaceId, templateId }),
         method: "DELETE",
-        body: { templateId },
       }),
     onSuccess: (_, { workspaceId }) => {
       q.invalidateQueries({
