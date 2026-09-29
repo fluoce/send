@@ -4,11 +4,15 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
 import { TemplateControllerInterface } from './template.interface';
-import { CreateTemplateBodyDto } from './template.dto';
+import {
+  CreateTemplateBodyDto,
+  UpdateTemplateMetaBodyDto,
+} from './template.dto';
 import type { Workspace as WorkspaceType } from 'src/config/database';
 import { WorkspaceGuard } from '../workspace/workspace.guard';
 import { TemplateService } from './template.service';
@@ -26,6 +30,20 @@ export class TemplateController implements TemplateControllerInterface {
   ) {
     return await this.templateService.createTemplate({
       name: body.name,
+      workspaceId: workspace.id,
+    });
+  }
+
+  @Patch(':templateId')
+  async updateTemplateMeta(
+    @Param() templateId: string,
+    @Body() body: UpdateTemplateMetaBodyDto,
+    @Workspace() workspace: WorkspaceType,
+  ) {
+    return this.templateService.updateTemplateMeta({
+      templateId,
+      name: body.name,
+      status: body.status,
       workspaceId: workspace.id,
     });
   }

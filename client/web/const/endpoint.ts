@@ -95,6 +95,13 @@ export const templateEndpoint = {
     templateBase({ workspaceId }),
   create: ({ workspaceId }: { workspaceId: string }) =>
     templateBase({ workspaceId }),
+  updateMeta: ({
+    workspaceId,
+    templateId,
+  }: {
+    workspaceId: string
+    templateId: string
+  }) => `${templateBase({ workspaceId })}/${templateId}`,
   delete: ({
     workspaceId,
     templateId,

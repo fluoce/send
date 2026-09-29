@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateDomainBodyDto {
   @IsString()
@@ -15,6 +15,10 @@ export class CreateDomainDto extends CreateDomainBodyDto {
 export class UpdateDomainBodyDto {
   @IsNotEmpty()
   @IsString()
+  @IsNotEmpty()
+  @IsEnum(['DISABLED', 'VERIFIED'], {
+    message: 'status must be one of the following values: DISABLED, VERIFIED',
+  })
   status!: 'DISABLED' | 'VERIFIED';
 }
 

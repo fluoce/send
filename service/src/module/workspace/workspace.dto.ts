@@ -75,6 +75,8 @@ export class GetWorkspacesByStatusDto {
   userId!: string;
 
   @IsOptional()
-  @IsString()
+  @IsEnum(['ACTIVE', 'DEACTIVE'], {
+    message: 'status must be one of the following values: ACTIVE, DEACTIVE',
+  })
   status?: Workspace['status'];
 }

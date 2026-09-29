@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { TemplateCoreInterface } from './template.interface';
 import { database, tableName, Template } from 'src/config/database';
-import { CreateTemplateDto } from './template.dto';
+import { CreateTemplateDto, UpdateTemplateMetaDto } from './template.dto';
 import { UlidService } from 'src/lib/ulid/ulid.service';
 import {
   DeleteCommand,
@@ -18,8 +18,11 @@ import {
   PutCommandOutput,
   QueryCommand,
   QueryCommandOutput,
+  UpdateCommand,
+  UpdateCommandOutput,
 } from '@aws-sdk/lib-dynamodb';
 import { funcTryCatch } from 'src/function/func-try-catch';
+import { funcBuildUpdateExpression } from 'src/function/func-build-update-expression';
 
 @Injectable()
 export class TemplateCore implements TemplateCoreInterface {
@@ -65,6 +68,49 @@ export class TemplateCore implements TemplateCoreInterface {
     }
 
     return item;
+  }
+
+  async updateTemplateMeta({
+    templateId,
+    name,
+    status,
+    workspaceId,
+  }: UpdateTemplateMetaDto) {
+    const {
+      UpdateExpression,
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+    } = funcBuildUpdateExpression({
+      name,
+      status,
+    });
+
+    const result = await funcTryCatch<UpdateCommandOutput | null, null>({
+      func: async () =>
+        await this.dynamoDB.send(
+          new UpdateCommand({
+            TableName: tableName.template,
+            Key: {
+              id: templateId,
+              workspaceId,
+            },
+            UpdateExpression,
+            ExpressionAttributeNames,
+            ExpressionAttributeValues,
+            ConditionExpression:
+              'attribute_exists(workspaceId) AND attribute_exists(id)',
+            ReturnValues: 'ALL_NEW',
+          }),
+        ),
+      logger: this.logger,
+      action: 'updateTemplateMeta_UpdateCommand',
+    });
+
+    if (!result?.Attributes) {
+      throw new ServiceUnavailableException('Failed to update template');
+    }
+
+    return result.Attributes as Template;
   }
 
   async deleteTemplate({

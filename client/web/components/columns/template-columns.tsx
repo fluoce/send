@@ -2,22 +2,35 @@
 
 import { createColumnHelper } from "@tanstack/react-table"
 import { Button } from "../ui/button"
-import { CheckCheck, Copy, Edit, EllipsisVertical, Trash2 } from "lucide-react"
+import {
+  CheckCheck,
+  CircleCheck,
+  Copy,
+  Edit,
+  EllipsisVertical,
+  PencilLine,
+  Trash2,
+} from "lucide-react"
 import { funcTrunc } from "@/func/func-trunc"
 import { DataTableFeatures } from "@/types/common/data-table-features"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu"
-import { TemplateType } from "@/types/data/template-data"
+import { TemplateStatus, TemplateType } from "@/types/data/template-data"
 import { useCopy } from "@/hooks/use-copy"
 import { DeleteTemplate } from "../form/delete-template"
 import Link from "next/link"
 import { useWorkspaceId } from "@/hooks/use-workspace-id"
 import { dashboardRoute } from "@/const/route"
 import { useRouter } from "next/navigation"
+import { useTemplateUpdateMeta } from "@/hooks/use-template"
+import { Spinner } from "../ui/spinner"
 
 const columnHelper = createColumnHelper<
   DataTableFeatures,
@@ -89,14 +102,15 @@ export const TemplateColumns = columnHelper.columns([
   columnHelper.accessor("action", {
     header: "Action",
     cell: (info) => {
+      const u = useTemplateUpdateMeta()
       const router = useRouter()
       const template = info?.row?.original
       const workspaceId = useWorkspaceId()
       return (
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
+          <DropdownMenuTrigger asChild disabled={u.isPending}>
             <Button variant="ghost" size="icon">
-              <EllipsisVertical />
+              {u.isPending ? <Spinner /> : <EllipsisVertical />}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
@@ -112,6 +126,37 @@ export const TemplateColumns = columnHelper.columns([
             >
               <Edit /> Edit
             </DropdownMenuItem>
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                {template?.status == "PUBLISH" ? (
+                  <CircleCheck />
+                ) : (
+                  <PencilLine />
+                )}
+                {template?.status}
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent>
+                {TemplateStatus.filter(
+                  (status) => status !== template?.status
+                ).map((status) => (
+                  <DropdownMenuItem
+                    key={status}
+                    onClick={() => {
+                      u.mutate({
+                        body: {
+                          status,
+                        },
+                        workspaceId,
+                        templateId: template.id,
+                      })
+                    }}
+                  >
+                    {status}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+
             <DeleteTemplate template={template}>
               <DropdownMenuItem
                 variant="destructive"

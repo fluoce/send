@@ -4,7 +4,10 @@ import { templateEndpoint } from "@/const/endpoint"
 import { templateQueryKey } from "@/const/query-key"
 import { ResType } from "@/types/res"
 import { TemplateDataType, TemplatesDataType } from "@/types/data/template-data"
-import { TemplateCreateType } from "@/types/payload/template-payload"
+import {
+  TemplateCreateType,
+  TemplateUpdateType,
+} from "@/types/payload/template-payload"
 
 export function useTemplate({
   templateId,
@@ -64,6 +67,35 @@ export function useTemplateCreate() {
     onSuccess: (_, { workspaceId }) => {
       q.invalidateQueries({
         queryKey: templateQueryKey.templates({ workspaceId }),
+      })
+    },
+  })
+}
+
+export function useTemplateUpdateMeta() {
+  const q = useQueryClient()
+  const f = useFetch()
+  return useMutation({
+    mutationFn: ({
+      body,
+      workspaceId,
+      templateId,
+    }: {
+      body: TemplateUpdateType
+      workspaceId: string
+      templateId: string
+    }) =>
+      f({
+        endpoint: templateEndpoint.updateMeta({ workspaceId, templateId }),
+        method: "PATCH",
+        body,
+      }),
+    onSuccess: (_, { workspaceId, templateId }) => {
+      q.invalidateQueries({
+        queryKey: templateQueryKey.templates({ workspaceId }),
+      })
+      q.invalidateQueries({
+        queryKey: templateQueryKey.template({ templateId }),
       })
     },
   })

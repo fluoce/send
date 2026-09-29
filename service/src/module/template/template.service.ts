@@ -1,4 +1,8 @@
-import { Injectable, ServiceUnavailableException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { TemplateServiceInterface } from './template.interface';
 import { TemplateCore } from './template.core';
 import {
@@ -6,6 +10,7 @@ import {
   DeleteTemplateDto,
   GetTemplateDto,
   GetTemplatesDto,
+  UpdateTemplateMetaDto,
 } from './template.dto';
 
 @Injectable()
@@ -21,6 +26,25 @@ export class TemplateService implements TemplateServiceInterface {
 
     return {
       message: 'Template created successfully',
+      template,
+    };
+  }
+
+  async updateTemplateMeta(body: UpdateTemplateMetaDto) {
+    if (!body?.name && !body.status) {
+      throw new BadRequestException(
+        'At least one field is required to update the template',
+      );
+    }
+
+    const template = await this.templateCore.updateTemplateMeta(body);
+
+    if (!template) {
+      throw new ServiceUnavailableException('Unable to updatetemplate');
+    }
+
+    return {
+      message: 'Template updated successfully',
       template,
     };
   }
