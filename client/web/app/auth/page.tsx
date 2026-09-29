@@ -4,9 +4,11 @@ import { PageSpinner } from "@/components/shared/loader"
 import { dashboardRoute } from "@/const/route"
 import { FluoceAuthFlow, FluoceAuthProvider } from "@fluoce/auth-react"
 import { useSearchParams } from "next/navigation"
+import { Suspense } from "react"
 
-export default function AuthCallback() {
+function AuthCallbackContent() {
   const searchParams = useSearchParams()
+
   const code = searchParams.get("code")
 
   if (!code) {
@@ -31,5 +33,13 @@ export default function AuthCallback() {
         fallback={<PageSpinner />}
       />
     </FluoceAuthProvider>
+  )
+}
+
+export default function AuthCallback() {
+  return (
+    <Suspense fallback={<PageSpinner />}>
+      <AuthCallbackContent />
+    </Suspense>
   )
 }
