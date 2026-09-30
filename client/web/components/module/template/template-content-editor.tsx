@@ -1,9 +1,7 @@
 "use client"
 
-import { useTemplateEditor } from "@/context/template-editor-context"
+import Tiptap from "./tip-tap/tip-tap"
 
 export function TemplateContentEditor() {
-  const { template } = useTemplateEditor()
-
-  return <div>content</div>
+  return <Tiptap />
 }
