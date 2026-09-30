@@ -1,13 +1,13 @@
 "use client"
 
-import { useState, ChangeEvent, MouseEvent, useEffect } from "react"
+import { useState, ChangeEvent, useEffect } from "react"
 import { TemplateEditorInput } from "./template-editor-input"
 import { useTemplateEditor } from "@/context/template-editor-context"
 import { useTemplateUpdateMeta } from "@/hooks/use-template"
 import { useWorkspaceId } from "@/hooks/use-workspace-id"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
-import { CheckCheck, Copy, Plus } from "lucide-react"
+import { CheckCheck, Copy, Plus, X } from "lucide-react"
 import { useCopy } from "@/hooks/use-copy"
 import { funcTrunc } from "@/func/func-trunc"
 
@@ -128,16 +128,38 @@ export function TemplateMetaEditor() {
         ) : null}
       </div>
       {showReplyTo ? (
-        <TemplateEditorInput
-          labelProps={{ children: "Reply-To", htmlFor: "template-replyTo" }}
-          inputProps={{
-            name: "replyTo",
-            id: "template-replyTo",
-            value: meta.replyTo,
-            onChange: handleChange("replyTo"),
-            onBlur: handleBlur,
-          }}
-        />
+        <div className="flex flex-wrap items-end justify-between gap-2">
+          <TemplateEditorInput
+            className="flex-1"
+            labelProps={{ children: "Reply-To", htmlFor: "template-replyTo" }}
+            inputProps={{
+              name: "replyTo",
+              id: "template-replyTo",
+              value: meta.replyTo,
+              onChange: handleChange("replyTo"),
+              onBlur: handleBlur,
+            }}
+          />
+          <Button
+            onClick={() => {
+              setShowReplyTo(false)
+              if (!meta.replyTo) return
+              u.mutateAsync({
+                body: {
+                  status: template?.status,
+                  replyTo: "",
+                },
+                templateId: template?.id!,
+                workspaceId,
+              })
+            }}
+            variant="ghost"
+            size="lg"
+            className="group text-muted-foreground"
+          >
+            <X className="group-hover:text-red-500" /> Remove
+          </Button>
+        </div>
       ) : null}
       <TemplateEditorInput
         labelProps={{ children: "Subject", htmlFor: "template-subject" }}
