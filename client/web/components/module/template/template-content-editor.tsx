@@ -1,7 +1,7 @@
 "use client"
 
-import Tiptap from "./tip-tap/tip-tap"
+import { TipTapEditor } from "./tip-tap/tip-tap-editor"
 
 export function TemplateContentEditor() {
-  return <Tiptap />
+  return <TipTapEditor />
 }
