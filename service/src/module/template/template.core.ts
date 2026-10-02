@@ -6,7 +6,11 @@ import {
 } from '@nestjs/common';
 import { TemplateCoreInterface } from './template.interface';
 import { database, tableName, Template } from 'src/config/database';
-import { CreateTemplateDto, UpdateTemplateMetaDto } from './template.dto';
+import {
+  CreateTemplateDto,
+  UpdateTemplateHtmlWithVariableDto,
+  UpdateTemplateMetaDto,
+} from './template.dto';
 import { UlidService } from 'src/lib/ulid/ulid.service';
 import {
   DeleteCommand,
@@ -114,6 +118,51 @@ export class TemplateCore implements TemplateCoreInterface {
 
     if (!result?.Attributes) {
       throw new ServiceUnavailableException('Failed to update template');
+    }
+
+    return result.Attributes as Template;
+  }
+
+  async updateTemplateHtml({
+    templateId,
+    html,
+    variables,
+    workspaceId,
+  }: UpdateTemplateHtmlWithVariableDto) {
+    const {
+      UpdateExpression,
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+    } = funcBuildUpdateExpression({
+      html,
+      variables: variables ?? undefined,
+    });
+
+    const result = await funcTryCatch<UpdateCommandOutput | null, null>({
+      func: async () =>
+        await this.dynamoDB.send(
+          new UpdateCommand({
+            TableName: tableName.template,
+            Key: {
+              workspaceId,
+              id: templateId,
+            },
+            UpdateExpression,
+            ExpressionAttributeNames,
+            ExpressionAttributeValues,
+            ConditionExpression:
+              'attribute_exists(workspaceId) AND attribute_exists(id)',
+            ReturnValues: 'ALL_NEW',
+          }),
+        ),
+      logger: this.logger,
+      action: 'updateTemplateMeta_UpdateCommand',
+    });
+
+    if (!result?.Attributes) {
+      throw new ServiceUnavailableException(
+        'Failed to update html content for the template',
+      );
     }
 
     return result.Attributes as Template;

@@ -102,6 +102,13 @@ export const templateEndpoint = {
     workspaceId: string
     templateId: string
   }) => `${templateBase({ workspaceId })}/${templateId}`,
+  updateHtml: ({
+    workspaceId,
+    templateId,
+  }: {
+    workspaceId: string
+    templateId: string
+  }) => `${templateBase({ workspaceId })}/${templateId}/html`,
   delete: ({
     workspaceId,
     templateId,

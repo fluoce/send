@@ -6,6 +6,7 @@ import { ResType } from "@/types/res"
 import { TemplateDataType, TemplatesDataType } from "@/types/data/template-data"
 import {
   TemplateCreateType,
+  TemplateUpdateHtmlType,
   TemplateUpdateType,
 } from "@/types/payload/template-payload"
 
@@ -98,6 +99,32 @@ export function useTemplateUpdateMeta() {
       q.invalidateQueries({
         queryKey: templateQueryKey.template({ templateId }),
       })
+    },
+  })
+}
+
+export function useTemplateUpdateHtml() {
+  const q = useQueryClient()
+  const f = useFetch()
+  return useMutation({
+    mutationFn: ({
+      body,
+      workspaceId,
+      templateId,
+    }: {
+      body: TemplateUpdateHtmlType
+      workspaceId: string
+      templateId: string
+    }) =>
+      f({
+        endpoint: templateEndpoint.updateHtml({ workspaceId, templateId }),
+        method: "PATCH",
+        body,
+      }),
+    onSuccess: (data, { templateId }) => {
+      q.setQueryData(templateQueryKey.template({ templateId }), () => ({
+        ...data,
+      }))
     },
   })
 }

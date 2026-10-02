@@ -9,3 +9,7 @@ export type TemplateUpdateType = {
   replyTo?: string
   subject?: string | null
 }
+
+export type TemplateUpdateHtmlType = {
+  html?: string
+}

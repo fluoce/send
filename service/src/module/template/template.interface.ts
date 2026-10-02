@@ -5,6 +5,9 @@ import {
   DeleteTemplateDto,
   GetTemplateDto,
   GetTemplatesDto,
+  UpdateTemplateHtmlBodyDto,
+  UpdateTemplateHtmlDto,
+  UpdateTemplateHtmlWithVariableDto,
   UpdateTemplateMetaBodyDto,
   UpdateTemplateMetaDto,
 } from './template.dto';
@@ -13,6 +16,9 @@ import { ResponseDataType } from 'src/types/response.type';
 export interface TemplateCoreInterface {
   createTemplate: (P: CreateTemplateDto) => Promise<Template>;
   updateTemplateMeta: (p: UpdateTemplateMetaDto) => Promise<Template>;
+  updateTemplateHtml: (
+    p: UpdateTemplateHtmlWithVariableDto,
+  ) => Promise<Template>;
   deleteTemplate: (P: DeleteTemplateDto) => Promise<Template>;
   getTemplate: (P: GetTemplateDto) => Promise<Template>;
   getTemplates: (P: GetTemplatesDto) => Promise<Template[]>;
@@ -25,6 +31,11 @@ export interface TemplateServiceInterface {
     }>
   >;
   updateTemplateMeta: (p: UpdateTemplateMetaDto) => Promise<
+    ResponseDataType<{
+      template: Template;
+    }>
+  >;
+  updateTemplateHtml: (p: UpdateTemplateHtmlDto) => Promise<
     ResponseDataType<{
       template: Template;
     }>
@@ -58,6 +69,15 @@ export interface TemplateControllerInterface {
   updateTemplateMeta: (
     templateId: string,
     body: UpdateTemplateMetaBodyDto,
+    workspace: Workspace,
+  ) => Promise<
+    ResponseDataType<{
+      template: Template;
+    }>
+  >;
+  updateTemplateHtml: (
+    templateId: string,
+    body: UpdateTemplateHtmlBodyDto,
     workspace: Workspace,
   ) => Promise<
     ResponseDataType<{

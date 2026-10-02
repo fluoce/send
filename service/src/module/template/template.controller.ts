@@ -11,6 +11,7 @@ import {
 import { TemplateControllerInterface } from './template.interface';
 import {
   CreateTemplateBodyDto,
+  UpdateTemplateHtmlBodyDto,
   UpdateTemplateMetaBodyDto,
 } from './template.dto';
 import type { Workspace as WorkspaceType } from 'src/config/database';
@@ -40,13 +41,26 @@ export class TemplateController implements TemplateControllerInterface {
     @Body() body: UpdateTemplateMetaBodyDto,
     @Workspace() workspace: WorkspaceType,
   ) {
-    return this.templateService.updateTemplateMeta({
+    return await this.templateService.updateTemplateMeta({
       templateId,
       name: body.name,
       status: body.status,
       from: body.from,
       replyTo: body.replyTo,
       subject: body.subject,
+      workspaceId: workspace.id,
+    });
+  }
+
+  @Patch(':templateId/html')
+  async updateTemplateHtml(
+    @Param('templateId') templateId: string,
+    @Body() body: UpdateTemplateHtmlBodyDto,
+    @Workspace() workspace: WorkspaceType,
+  ) {
+    return await this.templateService.updateTemplateHtml({
+      templateId,
+      html: body.html,
       workspaceId: workspace.id,
     });
   }

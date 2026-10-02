@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { CheckCheck, Copy, Plus, X } from "lucide-react"
 import { useCopy } from "@/hooks/use-copy"
 import { funcTrunc } from "@/func/func-trunc"
+import { Badge } from "@/components/ui/badge"
 
 export function TemplateMetaEditor() {
   const workspaceId = useWorkspaceId()
@@ -85,7 +86,7 @@ export function TemplateMetaEditor() {
             onBlur: handleBlur,
           }}
         />
-        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+        <div className="flex items-center gap-1 pl-1 text-xs text-muted-foreground">
           <span>{funcTrunc(template?.id!)}</span>
           <Button
             onClick={() => copy()}
@@ -171,6 +172,16 @@ export function TemplateMetaEditor() {
           onBlur: handleBlur,
         }}
       />
+      {template?.variables?.length ? (
+        <div className="group smooth flex w-full flex-1 flex-wrap items-center gap-3 border-b px-1 text-sm">
+          <label className="text-muted-foreground">Variables</label>
+          <div className="flex flex-wrap items-center gap-1 py-2">
+            {template?.variables?.map((v) => (
+              <Badge variant="outline">{v?.name}</Badge>
+            ))}
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }

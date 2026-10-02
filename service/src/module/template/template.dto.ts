@@ -1,5 +1,13 @@
-import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { Template } from 'src/config/database';
+import { Type } from 'class-transformer';
+import {
+  IsArray,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
+import { Template, TemplateVariable } from 'src/config/database';
 
 export class CreateTemplateBodyDto {
   @IsNotEmpty()
@@ -45,6 +53,30 @@ export class UpdateTemplateMetaDto extends UpdateTemplateMetaBodyDto {
   @IsNotEmpty()
   @IsString()
   workspaceId!: string;
+}
+
+export class UpdateTemplateHtmlBodyDto {
+  @IsOptional()
+  @IsString()
+  html?: string | null;
+}
+
+export class UpdateTemplateHtmlDto extends UpdateTemplateHtmlBodyDto {
+  @IsNotEmpty()
+  @IsString()
+  templateId!: string;
+
+  @IsNotEmpty()
+  @IsString()
+  workspaceId!: string;
+}
+
+export class UpdateTemplateHtmlWithVariableDto extends UpdateTemplateHtmlDto {
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => Object)
+  variables?: TemplateVariable[];
 }
 
 export class DeleteTemplateDto {

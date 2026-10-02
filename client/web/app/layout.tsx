@@ -27,7 +27,7 @@ export default function RootLayout({
         inter.variable
       )}
     >
-      <body className="bg-sidebar">
+      <body>
         <Provider>{children}</Provider>
       </body>
     </html>

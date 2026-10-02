@@ -9,7 +9,7 @@ export default function TemplateEditPage() {
   const { refetchKey } = useTemplateEditor()
 
   return (
-    <PageWrapper>
+    <PageWrapper className="gap-0">
       <TemplateMetaEditor key={refetchKey} />
       <TemplateContentEditor />
     </PageWrapper>

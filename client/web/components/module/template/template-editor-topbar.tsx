@@ -14,7 +14,7 @@ export function TemplateEditorTopbar() {
   const workspaceId = useWorkspaceId()
 
   return (
-    <nav className="sticky top-0 z-20 flex items-center justify-between bg-sidebar px-2 py-3">
+    <nav className="flex items-center justify-between px-2 py-3">
       <Link
         href={dashboardRoute.template({
           workspaceId,

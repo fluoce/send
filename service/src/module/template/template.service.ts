@@ -10,8 +10,10 @@ import {
   DeleteTemplateDto,
   GetTemplateDto,
   GetTemplatesDto,
+  UpdateTemplateHtmlDto,
   UpdateTemplateMetaDto,
 } from './template.dto';
+import { funcExtractTemplateVariables } from 'src/function/func-extract-template-variable';
 
 @Injectable()
 export class TemplateService implements TemplateServiceInterface {
@@ -47,6 +49,26 @@ export class TemplateService implements TemplateServiceInterface {
 
     if (!template) {
       throw new ServiceUnavailableException('Unable to updatetemplate');
+    }
+
+    return {
+      message: 'Template updated successfully',
+      template,
+    };
+  }
+
+  async updateTemplateHtml(body: UpdateTemplateHtmlDto) {
+    const variables = await funcExtractTemplateVariables(body?.html);
+
+    const template = await this.templateCore.updateTemplateHtml({
+      ...body,
+      variables: variables.length ? variables : [],
+    });
+
+    if (!template) {
+      throw new ServiceUnavailableException(
+        'Unable to update html for the template',
+      );
     }
 
     return {

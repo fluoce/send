@@ -59,7 +59,7 @@ export interface TemplateVariable {
   name: string;
   required: boolean;
   type: 'string' | 'number' | 'boolean';
-  defaultValue?: string | number | boolean;
+  value?: string | number | boolean;
 }
 
 export interface Template {
