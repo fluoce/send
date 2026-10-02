@@ -67,15 +67,7 @@ import Placeholder from "@tiptap/extension-placeholder"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { Eye, Upload } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet"
+import { PreviewTemplateHtml } from "@/components/module/template/preview-template-html"
 
 const SEARCH_AND_REPLACE_SCROLL_OPTIONS: ScrollIntoViewOptions = {
   block: "center",
@@ -189,10 +181,12 @@ export function SimpleEditor({
   html,
   setHtml,
   isSaving,
+  saveNow,
 }: {
   html: string
   setHtml: Dispatch<SetStateAction<string>>
   isSaving: boolean
+  saveNow: (html: string) => void
 }) {
   const isMobile = useIsBreakpoint()
   const [mobileView, setMobileView] = useState<"main" | "highlighter" | "link">(
@@ -201,6 +195,7 @@ export function SimpleEditor({
   const [isSearchAndReplaceOpen, setIsSearchAndReplaceOpen] = useState(false)
   const toolbarRef = useRef<HTMLDivElement>(null)
   const searchAndReplaceButtonRef = useRef<HTMLButtonElement>(null)
+  const editorContentRef = useRef<HTMLDivElement>(null)
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -282,17 +277,49 @@ export function SimpleEditor({
 
   async function handleHtmlImport(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
-
     if (!file || !editor) return
-
     const html = await file.text()
-
     editor.commands.setContent(html)
-
     setHtml(html)
-
     event.target.value = ""
   }
+
+  const [editorFocused, setEditorFocused] = useState(false)
+
+  useEffect(() => {
+    const editorEl = editorContentRef.current
+    if (!editorEl) return
+    function handleFocus() {
+      setEditorFocused(true)
+    }
+    function handleBlur(e: FocusEvent) {
+      if (!editorEl?.contains(e.relatedTarget as Node)) {
+        setEditorFocused(false)
+      }
+    }
+    editorEl.addEventListener("focusin", handleFocus)
+    editorEl.addEventListener("focusout", handleBlur)
+    return () => {
+      editorEl.removeEventListener("focusin", handleFocus)
+      editorEl.removeEventListener("focusout", handleBlur)
+    }
+  }, [])
+
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (editorFocused) {
+        if (
+          (event.ctrlKey || event.metaKey) &&
+          (event.key === "s" || event.key === "S")
+        ) {
+          event.preventDefault()
+          saveNow(editor?.getHTML?.() ?? "")
+        }
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [editor, editorFocused, saveNow])
 
   return (
     <div className="flex w-full max-w-full flex-col">
@@ -308,7 +335,6 @@ export function SimpleEditor({
           >
             saving...
           </Badge>
-
           <Btn
             type="button"
             variant="secondary"
@@ -326,32 +352,23 @@ export function SimpleEditor({
               className="hidden"
             />
           </Btn>
-          <Sheet>
-            <SheetTrigger asChild>
-              <Btn
-                type="button"
-                variant="secondary"
-                size="sm"
-                className="group text-muted-foreground"
-              >
-                <Eye className="group-hover:text-primary" /> Preview
-                <span className="group-hover:text-primary">Email</span>
-              </Btn>
-            </SheetTrigger>
-            <SheetContent>
-              <div className="h-full w-full overflow-auto">
-                <iframe
-                  srcDoc={html}
-                  title="Email preview"
-                  className="h-full w-full border-0"
-                  sandbox=""
-                />
-              </div>
-            </SheetContent>
-          </Sheet>
+          <PreviewTemplateHtml html={html}>
+            <Btn
+              type="button"
+              variant="secondary"
+              size="sm"
+              className="group text-muted-foreground"
+            >
+              <Eye className="group-hover:text-primary" /> Preview
+              <span className="group-hover:text-primary">Email</span>
+            </Btn>
+          </PreviewTemplateHtml>
         </div>
       </div>
-      <div className="simple-editor-wrapper w-full max-w-full">
+      <div
+        className="simple-editor-wrapper w-full max-w-full"
+        ref={editorContentRef}
+      >
         <EditorContext.Provider value={{ editor }}>
           <Toolbar ref={toolbarRef}>
             {mobileView === "main" ? (
@@ -377,7 +394,6 @@ export function SimpleEditor({
             onClose={closeSearchAndReplace}
             scrollIntoViewOptions={SEARCH_AND_REPLACE_SCROLL_OPTIONS}
           />
-
           <EditorContent
             editor={editor}
             role="presentation"

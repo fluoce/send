@@ -177,7 +177,9 @@ export function TemplateMetaEditor() {
           <label className="text-muted-foreground">Variables</label>
           <div className="flex flex-wrap items-center gap-1 py-2">
             {template?.variables?.map((v) => (
-              <Badge variant="outline">{v?.name}</Badge>
+              <Badge key={v?.name} variant="outline">
+                {v?.name}
+              </Badge>
             ))}
           </div>
         </div>

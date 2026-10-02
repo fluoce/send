@@ -9,6 +9,7 @@ import { useEffect, useState } from "react"
 
 export function TemplateContentEditor() {
   const templateId = useTemplateId()
+
   const workspaceId = useWorkspaceId()
 
   const { data } = useTemplate({
@@ -19,7 +20,7 @@ export function TemplateContentEditor() {
   const templateHtml = data?.data?.template?.html || ""
   const [html, setHtml] = useState(templateHtml)
 
-  const { save, setInitialHtml, isSaving } = useSaveTemplate({
+  const { save, setInitialHtml, isSaving, saveNow } = useSaveTemplate({
     templateId,
     workspaceId,
   })
@@ -36,7 +37,12 @@ export function TemplateContentEditor() {
 
   return (
     <div className="flex items-center justify-center">
-      <SimpleEditor html={html} setHtml={setHtml} isSaving={isSaving} />
+      <SimpleEditor
+        html={html}
+        setHtml={setHtml}
+        isSaving={isSaving}
+        saveNow={saveNow}
+      />
     </div>
   )
 }

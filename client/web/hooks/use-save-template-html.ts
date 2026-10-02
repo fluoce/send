@@ -25,7 +25,6 @@ export function useSaveTemplate({
       if (html === lastSavedHtml.current) {
         return
       }
-
       try {
         await updateHtml.mutateAsync({
           body: {
@@ -43,6 +42,19 @@ export function useSaveTemplate({
       }
     },
     [templateId, workspaceId, updateHtml]
+  )
+
+  const saveNow = useCallback(
+    async (html: string) => {
+      const toastId = toast.loading("Saving template...")
+      try {
+        await save(html)
+        toast.success("Template saved successfully", { id: toastId })
+      } catch (error) {
+        toast.error("Failed to save template", { id: toastId })
+      }
+    },
+    [save]
   )
 
   const debouncedSave = useCallback(
@@ -64,7 +76,7 @@ export function useSaveTemplate({
 
   return {
     save: debouncedSave,
-    saveNow: save,
+    saveNow,
     setInitialHtml,
     isSaving: updateHtml.isPending,
   }
