@@ -1,21 +1,29 @@
 "use client"
 
-import { useState, ChangeEvent, useEffect } from "react"
+import { useState, ChangeEvent, useEffect, useRef } from "react"
 import { TemplateEditorInput } from "./template-editor-input"
 import { useTemplateEditor } from "@/context/template-editor-context"
 import { useTemplateUpdateMeta } from "@/hooks/use-template"
 import { useWorkspaceId } from "@/hooks/use-workspace-id"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
-import { CheckCheck, Copy, Plus, X } from "lucide-react"
+import { CheckCheck, Copy, Eye, Plus, Upload, X } from "lucide-react"
 import { useCopy } from "@/hooks/use-copy"
 import { funcTrunc } from "@/func/func-trunc"
 import { Badge } from "@/components/ui/badge"
+import { cn } from "@/lib/utils"
+import { PreviewTemplateHtml } from "./preview-template-html"
+import { useSaveTemplateHtml } from "@/hooks/use-save-template-html"
 
 export function TemplateMetaEditor() {
   const workspaceId = useWorkspaceId()
 
-  const { template } = useTemplateEditor()
+  const { template, editor, setEditor } = useTemplateEditor()
+
+  const { setInitialHtml, save, saveNow, isSaving } = useSaveTemplateHtml({
+    templateId: template?.id!,
+    workspaceId,
+  })
 
   const u = useTemplateUpdateMeta()
 
@@ -24,6 +32,8 @@ export function TemplateMetaEditor() {
   })
 
   const [showReplyTo, setShowReplyTo] = useState(false)
+
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [meta, setMeta] = useState({
     name: template?.name ?? "",
@@ -70,6 +80,13 @@ export function TemplateMetaEditor() {
     }).catch((erro) => {
       toast.error(erro?.message ?? "Template saving failed !")
     })
+  }
+
+  async function handleHtmlImport(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    if (!file) return
+    const html = await file.text()
+    event.target.value = ""
   }
 
   return (
@@ -184,6 +201,67 @@ export function TemplateMetaEditor() {
           </div>
         </div>
       ) : null}
+      <div className="flex w-full max-w-full flex-1 flex-wrap items-center justify-between gap-4 border-b py-2">
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            className={cn(editor == "text" ? "" : "text-muted-foreground")}
+            onClick={() => setEditor("text")}
+          >
+            Text Editor
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            className={cn(editor == "html" ? "" : "text-muted-foreground")}
+            onClick={() => setEditor("html")}
+          >
+            HTML Editor
+          </Button>
+        </div>
+        <div className="flex items-center gap-2">
+          <Badge
+            variant="secondary"
+            className={cn(
+              "smooth text-muted-foreground",
+              isSaving ? "opacity-100" : "opacity-0"
+            )}
+          >
+            saving...
+          </Badge>
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            className="group text-muted-foreground"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <Upload className="group-hover:text-primary" />
+            Upload <span className="group-hover:text-primary">HTML</span>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".html,text/html"
+              onChange={handleHtmlImport}
+              className="hidden"
+            />
+          </Button>
+          <PreviewTemplateHtml html={template?.html || ""}>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              className="group text-muted-foreground"
+            >
+              <Eye className="group-hover:text-primary" /> Preview
+              <span className="group-hover:text-primary">Email</span>
+            </Button>
+          </PreviewTemplateHtml>
+        </div>
+      </div>
     </div>
   )
 }

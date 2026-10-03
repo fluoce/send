@@ -1,13 +1,13 @@
 "use client"
 
 import { SimpleEditor } from "@/components/tiptap-templates/simple/simple-editor"
-import { useSaveTemplate } from "@/hooks/use-save-template-html"
+import { useSaveTemplateHtml } from "@/hooks/use-save-template-html"
 import { useTemplate } from "@/hooks/use-template"
 import { useTemplateId } from "@/hooks/use-template-id"
 import { useWorkspaceId } from "@/hooks/use-workspace-id"
 import { useEffect, useState } from "react"
 
-export function TemplateContentEditor() {
+export function TemplateContentTextEditor() {
   const templateId = useTemplateId()
 
   const workspaceId = useWorkspaceId()
@@ -18,9 +18,10 @@ export function TemplateContentEditor() {
   })
 
   const templateHtml = data?.data?.template?.html || ""
+
   const [html, setHtml] = useState(templateHtml)
 
-  const { save, setInitialHtml, isSaving, saveNow } = useSaveTemplate({
+  const { save, setInitialHtml, isSaving, saveNow } = useSaveTemplateHtml({
     templateId,
     workspaceId,
   })

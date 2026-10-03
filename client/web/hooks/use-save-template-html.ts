@@ -11,7 +11,7 @@ interface UseSaveTemplateProps {
   delay?: number
 }
 
-export function useSaveTemplate({
+export function useSaveTemplateHtml({
   templateId,
   workspaceId,
   delay = 2200,

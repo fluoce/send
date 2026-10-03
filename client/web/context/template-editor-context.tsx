@@ -1,6 +1,13 @@
 "use client"
 
-import { createContext, useContext, useEffect, useState } from "react"
+import {
+  createContext,
+  Dispatch,
+  SetStateAction,
+  useContext,
+  useEffect,
+  useState,
+} from "react"
 import { TemplateType } from "@/types/data/template-data"
 import { useWorkspaceId } from "@/hooks/use-workspace-id"
 import { useTemplateId } from "@/hooks/use-template-id"
@@ -14,12 +21,16 @@ import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import { Spinner } from "@/components/ui/spinner"
 
+type EditorType = "text" | "html"
+
 type TemplateEditorContextType = {
   template: TemplateType | null
   setTemplate: (template: TemplateType | null) => void
   refetchKey: number
   refetchTemplate: () => void
   isRefetching: boolean
+  setEditor: Dispatch<SetStateAction<EditorType>>
+  editor: EditorType
 }
 
 const TemplateEditorContext = createContext<
@@ -32,6 +43,8 @@ export function TemplateEditorProvider({
   children: React.ReactNode
 }) {
   const [template, setTemplate] = useState<TemplateType | null>(null)
+
+  const [editor, setEditor] = useState<EditorType>("text")
 
   const [refetchKey, setRefetchKey] = useState<number>(0)
 
@@ -63,6 +76,8 @@ export function TemplateEditorProvider({
     refetchKey,
     refetchTemplate,
     isRefetching,
+    editor,
+    setEditor,
   }
 
   if (isLoading) {

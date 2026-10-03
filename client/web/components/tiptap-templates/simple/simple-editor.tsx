@@ -2,6 +2,7 @@
 
 import {
   Dispatch,
+  RefObject,
   SetStateAction,
   useCallback,
   useEffect,
@@ -20,7 +21,6 @@ import { Superscript } from "@tiptap/extension-superscript"
 import { FindAndReplace } from "@tiptap/extension-find-and-replace"
 import { Selection } from "@tiptap/extensions"
 import { Button } from "@/components/tiptap-ui-primitive/button"
-import { Button as Btn } from "@/components/ui/button"
 import {
   Toolbar,
   ToolbarGroup,
@@ -61,13 +61,11 @@ import { ArrowLeftIcon } from "@/components/tiptap-icons/arrow-left-icon"
 import { HighlighterIcon } from "@/components/tiptap-icons/highlighter-icon"
 import { LinkIcon } from "@/components/tiptap-icons/link-icon"
 import { useIsBreakpoint } from "@/hooks/use-is-breakpoint"
-import { cn, handleImageUpload, MAX_FILE_SIZE } from "@/lib/tiptap-utils"
+import { handleImageUpload, MAX_FILE_SIZE } from "@/lib/tiptap-utils"
 import "@/components/tiptap-templates/simple/simple-editor.scss"
 import Placeholder from "@tiptap/extension-placeholder"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
-import { Eye, Upload } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import { PreviewTemplateHtml } from "@/components/module/template/preview-template-html"
+import { useOnCtrlS } from "@/hooks/use-on-ctrl-s"
 
 const SEARCH_AND_REPLACE_SCROLL_OPTIONS: ScrollIntoViewOptions = {
   block: "center",
@@ -189,12 +187,16 @@ export function SimpleEditor({
   saveNow: (html: string) => void
 }) {
   const isMobile = useIsBreakpoint()
+
   const [mobileView, setMobileView] = useState<"main" | "highlighter" | "link">(
     "main"
   )
   const [isSearchAndReplaceOpen, setIsSearchAndReplaceOpen] = useState(false)
+
   const toolbarRef = useRef<HTMLDivElement>(null)
+
   const searchAndReplaceButtonRef = useRef<HTMLButtonElement>(null)
+
   const editorContentRef = useRef<HTMLDivElement>(null)
 
   const editor = useEditor({
@@ -273,134 +275,49 @@ export function SimpleEditor({
     openSearchAndReplace()
   }, [closeSearchAndReplace, isSearchAndReplaceOpen, openSearchAndReplace])
 
-  const fileInputRef = useRef<HTMLInputElement>(null)
-
-  async function handleHtmlImport(event: React.ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0]
-    if (!file || !editor) return
-    const html = await file.text()
-    editor.commands.setContent(html)
-    setHtml(html)
-    event.target.value = ""
-  }
-
-  const [editorFocused, setEditorFocused] = useState(false)
-
-  useEffect(() => {
-    const editorEl = editorContentRef.current
-    if (!editorEl) return
-    function handleFocus() {
-      setEditorFocused(true)
-    }
-    function handleBlur(e: FocusEvent) {
-      if (!editorEl?.contains(e.relatedTarget as Node)) {
-        setEditorFocused(false)
-      }
-    }
-    editorEl.addEventListener("focusin", handleFocus)
-    editorEl.addEventListener("focusout", handleBlur)
-    return () => {
-      editorEl.removeEventListener("focusin", handleFocus)
-      editorEl.removeEventListener("focusout", handleBlur)
-    }
-  }, [])
-
-  useEffect(() => {
-    function handleKeyDown(event: KeyboardEvent) {
-      if (editorFocused) {
-        if (
-          (event.ctrlKey || event.metaKey) &&
-          (event.key === "s" || event.key === "S")
-        ) {
-          event.preventDefault()
-          saveNow(editor?.getHTML?.() ?? "")
-        }
-      }
-    }
-    window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [editor, editorFocused, saveNow])
+  useOnCtrlS({
+    func: () => {
+      saveNow(editor?.getHTML() ?? "")
+    },
+    ref: editorContentRef as RefObject<HTMLDivElement>,
+  })
 
   return (
-    <div className="flex w-full max-w-full flex-col">
-      <div className="flex w-full max-w-full flex-1 flex-wrap items-center justify-between gap-4 border-b py-2">
-        <span></span>
-        <div className="flex items-center gap-2">
-          <Badge
-            variant="secondary"
-            className={cn(
-              "smooth text-muted-foreground",
-              isSaving ? "opacity-100" : "opacity-0"
-            )}
-          >
-            saving...
-          </Badge>
-          <Btn
-            type="button"
-            variant="secondary"
-            size="sm"
-            className="group text-muted-foreground"
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <Upload className="group-hover:text-primary" />
-            Upload <span className="group-hover:text-primary">HTML</span>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".html,text/html"
-              onChange={handleHtmlImport}
-              className="hidden"
+    <div
+      className="simple-editor-wrapper w-full max-w-full"
+      ref={editorContentRef}
+    >
+      <EditorContext.Provider value={{ editor }}>
+        <Toolbar ref={toolbarRef}>
+          {mobileView === "main" ? (
+            <MainToolbarContent
+              onHighlighterClick={() => setMobileView("highlighter")}
+              onLinkClick={() => setMobileView("link")}
+              onSearchAndReplaceClick={toggleSearchAndReplace}
+              isSearchAndReplaceOpen={isSearchAndReplaceOpen}
+              searchAndReplaceButtonRef={searchAndReplaceButtonRef}
+              isMobile={isMobile}
             />
-          </Btn>
-          <PreviewTemplateHtml html={html}>
-            <Btn
-              type="button"
-              variant="secondary"
-              size="sm"
-              className="group text-muted-foreground"
-            >
-              <Eye className="group-hover:text-primary" /> Preview
-              <span className="group-hover:text-primary">Email</span>
-            </Btn>
-          </PreviewTemplateHtml>
-        </div>
-      </div>
-      <div
-        className="simple-editor-wrapper w-full max-w-full"
-        ref={editorContentRef}
-      >
-        <EditorContext.Provider value={{ editor }}>
-          <Toolbar ref={toolbarRef}>
-            {mobileView === "main" ? (
-              <MainToolbarContent
-                onHighlighterClick={() => setMobileView("highlighter")}
-                onLinkClick={() => setMobileView("link")}
-                onSearchAndReplaceClick={toggleSearchAndReplace}
-                isSearchAndReplaceOpen={isSearchAndReplaceOpen}
-                searchAndReplaceButtonRef={searchAndReplaceButtonRef}
-                isMobile={isMobile}
-              />
-            ) : (
-              <MobileToolbarContent
-                type={mobileView === "highlighter" ? "highlighter" : "link"}
-                onBack={() => setMobileView("main")}
-              />
-            )}
-          </Toolbar>
-          <SearchAndReplace
-            className="simple-editor-search-and-replace"
-            open={isSearchAndReplaceOpen}
-            onOpen={openSearchAndReplace}
-            onClose={closeSearchAndReplace}
-            scrollIntoViewOptions={SEARCH_AND_REPLACE_SCROLL_OPTIONS}
-          />
-          <EditorContent
-            editor={editor}
-            role="presentation"
-            className="simple-editor-content"
-          />
-        </EditorContext.Provider>
-      </div>
+          ) : (
+            <MobileToolbarContent
+              type={mobileView === "highlighter" ? "highlighter" : "link"}
+              onBack={() => setMobileView("main")}
+            />
+          )}
+        </Toolbar>
+        <SearchAndReplace
+          className="simple-editor-search-and-replace"
+          open={isSearchAndReplaceOpen}
+          onOpen={openSearchAndReplace}
+          onClose={closeSearchAndReplace}
+          scrollIntoViewOptions={SEARCH_AND_REPLACE_SCROLL_OPTIONS}
+        />
+        <EditorContent
+          editor={editor}
+          role="presentation"
+          className="simple-editor-content"
+        />
+      </EditorContext.Provider>
     </div>
   )
 }
