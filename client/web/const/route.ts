@@ -22,7 +22,7 @@ export const dashboardRoute = {
   }: {
     workspaceId: string
     templateId: string
-  }) => `${base}${templateEditBase}/${workspaceId}/template/${templateId}`,
+  }) => `${base}${templateEditBase}/${workspaceId}/${templateId}`,
 }
 
 export const externalRoute = {
