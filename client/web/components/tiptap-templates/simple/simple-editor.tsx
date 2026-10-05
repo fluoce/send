@@ -178,12 +178,10 @@ const MobileToolbarContent = ({
 export function SimpleEditor({
   html,
   setHtml,
-  isSaving,
   saveNow,
 }: {
   html: string
   setHtml: Dispatch<SetStateAction<string>>
-  isSaving: boolean
   saveNow: (html: string) => void
 }) {
   const isMobile = useIsBreakpoint()

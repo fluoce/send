@@ -13,9 +13,9 @@ export default function TemplateEditPage() {
     <PageWrapper className="gap-0">
       <TemplateMetaEditor key={refetchKey} />
       {editor == "text" ? (
-        <TemplateContentTextEditor />
+        <TemplateContentTextEditor key={refetchKey + 1} />
       ) : editor == "html" ? (
-        <TemplateContentHtmlEditor />
+        <TemplateContentHtmlEditor key={refetchKey + 2} />
       ) : null}
     </PageWrapper>
   )

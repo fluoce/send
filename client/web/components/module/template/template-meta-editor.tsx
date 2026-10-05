@@ -18,9 +18,9 @@ import { useSaveTemplateHtml } from "@/hooks/use-save-template-html"
 export function TemplateMetaEditor() {
   const workspaceId = useWorkspaceId()
 
-  const { template, editor, setEditor } = useTemplateEditor()
+  const { template, editor, setEditor, setTemplate } = useTemplateEditor()
 
-  const { setInitialHtml, save, saveNow, isSaving } = useSaveTemplateHtml({
+  const { saveNow, isSaving } = useSaveTemplateHtml({
     templateId: template?.id!,
     workspaceId,
   })
@@ -86,6 +86,8 @@ export function TemplateMetaEditor() {
     const file = event.target.files?.[0]
     if (!file) return
     const html = await file.text()
+    setTemplate((prev) => (prev ? template : null))
+    saveNow(html ?? null)
     event.target.value = ""
   }
 
