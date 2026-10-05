@@ -1,14 +1,6 @@
 "use client"
 
-import {
-  Dispatch,
-  RefObject,
-  SetStateAction,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react"
+import { RefObject, useCallback, useEffect, useRef, useState } from "react"
 import { EditorContent, EditorContext, useEditor } from "@tiptap/react"
 import { StarterKit } from "@tiptap/starter-kit"
 import { Image } from "@tiptap/extension-image"
@@ -177,11 +169,11 @@ const MobileToolbarContent = ({
 
 export function SimpleEditor({
   html,
-  setHtml,
+  save,
   saveNow,
 }: {
   html: string
-  setHtml: Dispatch<SetStateAction<string>>
+  save: (html: string) => void
   saveNow: (html: string) => void
 }) {
   const isMobile = useIsBreakpoint()
@@ -244,7 +236,7 @@ export function SimpleEditor({
     content: html,
     onUpdate: ({ editor }) => {
       const html = editor.getHTML()
-      setHtml(html)
+      save(html)
     },
   })
 

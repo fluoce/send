@@ -20,17 +20,22 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import { Spinner } from "@/components/ui/spinner"
+import { useSaveTemplateHtml } from "@/hooks/use-save-template-html"
 
 type EditorType = "text" | "html"
 
 type TemplateEditorContextType = {
   template: TemplateType | null
-  setTemplate: (template: TemplateType | null) => void
   refetchKey: number
+  setRefetchKey: Dispatch<SetStateAction<number>>
   refetchTemplate: () => void
   isRefetching: boolean
   setEditor: Dispatch<SetStateAction<EditorType>>
   editor: EditorType
+  save: (html: string) => void
+  saveNow: (html: string) => Promise<void>
+  setInitialHtml: (html: string) => void
+  isSaving: boolean
 }
 
 const TemplateEditorContext = createContext<
@@ -42,8 +47,6 @@ export function TemplateEditorProvider({
 }: {
   children: React.ReactNode
 }) {
-  const [template, setTemplate] = useState<TemplateType | null>(null)
-
   const [editor, setEditor] = useState<EditorType>("text")
 
   const [refetchKey, setRefetchKey] = useState<number>(0)
@@ -57,6 +60,11 @@ export function TemplateEditorProvider({
     workspaceId,
   })
 
+  const { isSaving, save, saveNow, setInitialHtml } = useSaveTemplateHtml({
+    templateId,
+    workspaceId,
+  })
+
   function refetchTemplate() {
     refetch().then(() => {
       setRefetchKey((prev) => prev + 1)
@@ -66,18 +74,22 @@ export function TemplateEditorProvider({
 
   useEffect(() => {
     if (data?.data?.template) {
-      setTemplate(data?.data?.template)
+      setInitialHtml(data?.data?.template?.html || "")
     }
-  }, [data?.data?.template])
+  }, [data?.data?.template, data?.data?.template?.html, setInitialHtml])
 
   const value = {
-    template,
-    setTemplate,
+    template: data?.data?.template ?? null,
     refetchKey,
+    setRefetchKey,
     refetchTemplate,
     isRefetching,
     editor,
     setEditor,
+    save,
+    saveNow,
+    setInitialHtml,
+    isSaving,
   }
 
   if (isLoading) {
@@ -101,7 +113,7 @@ export function TemplateEditorProvider({
             <ArrowUpRight /> Templates
           </Button>
         </Link>
-        <Button disabled={isRefetching} onClick={() => refetchTemplate()}>
+        <Button disabled={isRefetching} onClick={refetchTemplate}>
           {isRefetching ? <Spinner /> : <RotateCcw />} Retry
         </Button>
       </Nodata>

@@ -10,12 +10,12 @@ export default function TemplateEditPage() {
   const { refetchKey, editor } = useTemplateEditor()
 
   return (
-    <PageWrapper className="gap-0">
-      <TemplateMetaEditor key={refetchKey} />
+    <PageWrapper key={refetchKey} className="gap-0">
+      <TemplateMetaEditor />
       {editor == "text" ? (
-        <TemplateContentTextEditor key={refetchKey + 1} />
+        <TemplateContentTextEditor />
       ) : editor == "html" ? (
-        <TemplateContentHtmlEditor key={refetchKey + 2} />
+        <TemplateContentHtmlEditor />
       ) : null}
     </PageWrapper>
   )

@@ -13,17 +13,12 @@ import { funcTrunc } from "@/func/func-trunc"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { PreviewTemplateHtml } from "./preview-template-html"
-import { useSaveTemplateHtml } from "@/hooks/use-save-template-html"
 
 export function TemplateMetaEditor() {
   const workspaceId = useWorkspaceId()
 
-  const { template, editor, setEditor, setTemplate } = useTemplateEditor()
-
-  const { saveNow, isSaving } = useSaveTemplateHtml({
-    templateId: template?.id!,
-    workspaceId,
-  })
+  const { template, editor, setEditor, setRefetchKey, saveNow, isSaving } =
+    useTemplateEditor()
 
   const u = useTemplateUpdateMeta()
 
@@ -86,8 +81,10 @@ export function TemplateMetaEditor() {
     const file = event.target.files?.[0]
     if (!file) return
     const html = await file.text()
-    setTemplate((prev) => (prev ? template : null))
-    saveNow(html ?? null)
+
+    saveNow(html ?? null).then(() => {
+      setRefetchKey((prev) => prev + 1)
+    })
     event.target.value = ""
   }
 
@@ -206,7 +203,6 @@ export function TemplateMetaEditor() {
       <div className="flex w-full max-w-full flex-1 flex-wrap items-center justify-between gap-4 border-b py-2">
         <div className="flex items-center gap-2">
           <Button
-            type="button"
             variant="secondary"
             size="sm"
             className={cn(editor == "text" ? "" : "text-muted-foreground")}
@@ -215,7 +211,6 @@ export function TemplateMetaEditor() {
             Text Editor
           </Button>
           <Button
-            type="button"
             variant="secondary"
             size="sm"
             className={cn(editor == "html" ? "" : "text-muted-foreground")}
@@ -235,14 +230,13 @@ export function TemplateMetaEditor() {
             saving...
           </Badge>
           <Button
-            type="button"
             variant="secondary"
             size="sm"
-            className="group text-muted-foreground"
+            className="text-muted-foreground"
             onClick={() => fileInputRef.current?.click()}
           >
-            <Upload className="group-hover:text-primary" />
-            Upload <span className="group-hover:text-primary">HTML</span>
+            <Upload />
+            Upload HTML
             <input
               ref={fileInputRef}
               type="file"
@@ -253,13 +247,11 @@ export function TemplateMetaEditor() {
           </Button>
           <PreviewTemplateHtml html={template?.html || ""}>
             <Button
-              type="button"
               variant="secondary"
               size="sm"
-              className="group text-muted-foreground"
+              className="text-muted-foreground"
             >
-              <Eye className="group-hover:text-primary" /> Preview
-              <span className="group-hover:text-primary">Email</span>
+              <Eye className="group-hover:text-primary" /> Preview Email
             </Button>
           </PreviewTemplateHtml>
         </div>
