@@ -68,7 +68,7 @@ export function useFetch() {
 
       return response.json()
     },
-    [access_token]
+    [access_token, refresh]
   )
 
   return request
