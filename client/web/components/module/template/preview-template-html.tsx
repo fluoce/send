@@ -33,7 +33,7 @@ export function PreviewTemplateHtml({
                 </SheetDescription>
               </div>
             </div>
-            <SheetClose>
+            <SheetClose asChild>
               <Button variant="ghost" size="icon-lg">
                 <X />
               </Button>
