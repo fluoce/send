@@ -137,48 +137,48 @@ export const handler = async (event) => {
       return res(413, `'html' exceeds ${MAX_HTML_BYTES} bytes`, {
         invalidValue: ["html"],
       });
-    let useFrom = SEND_FROM;
-    if (from !== undefined) {
-      if (typeof from !== "string")
-        return res(400, "'from' must be a string", { invalidValue: ["from"] });
-      const fromInfo = parseFromAddress(from);
-      if (!fromInfo)
-        return res(400, "'from' address is invalid", {
-          invalidValue: ["from"],
-          details: { from },
-        });
-      const verifiedDomainResult = await docClient.send(
-        new GetCommand({
-          TableName: VERIFIED_DOMAIN_TABLE_NAME,
-          Key: {
-            domain: fromInfo.domain,
-          },
-        }),
-      );
-      const verifiedDomain = verifiedDomainResult.Item;
-      if (!verifiedDomain) {
-        return res(
-          403,
-          "The 'from' domain is not verified or not attached to this workspace",
-          {
-            domain: fromInfo.domain,
-          },
-        );
-      }
-      if (verifiedDomain.workspaceId !== apiKeyRecord.workspaceId) {
-        return res(403, "The 'from' domain is not attached to this workspace", {
-          domain: fromInfo.domain,
-        });
-      }
-      if (apiKeyRecord.domainId !== verifiedDomain.domainId) {
-        return res(403, "The 'from' domain is not attached to this API key", {
-          domain: fromInfo.domain,
-        });
-      }
-      useFrom = fromInfo.name
-        ? `"${fromInfo.name}" <${fromInfo.email}>`
-        : fromInfo.email;
-    }
+    let useFrom = from || SEND_FROM;
+    // if (from !== undefined) {
+    //   if (typeof from !== "string")
+    //     return res(400, "'from' must be a string", { invalidValue: ["from"] });
+    //   const fromInfo = parseFromAddress(from);
+    //   if (!fromInfo)
+    //     return res(400, "'from' address is invalid", {
+    //       invalidValue: ["from"],
+    //       details: { from },
+    //     });
+    //   const verifiedDomainResult = await docClient.send(
+    //     new GetCommand({
+    //       TableName: VERIFIED_DOMAIN_TABLE_NAME,
+    //       Key: {
+    //         domain: fromInfo.domain,
+    //       },
+    //     }),
+    //   );
+    //   const verifiedDomain = verifiedDomainResult.Item;
+    //   if (!verifiedDomain) {
+    //     return res(
+    //       403,
+    //       "The 'from' domain is not verified or not attached to this workspace",
+    //       {
+    //         domain: fromInfo.domain,
+    //       },
+    //     );
+    //   }
+    //   if (verifiedDomain.workspaceId !== apiKeyRecord.workspaceId) {
+    //     return res(403, "The 'from' domain is not attached to this workspace", {
+    //       domain: fromInfo.domain,
+    //     });
+    //   }
+    //   if (apiKeyRecord.domainId !== verifiedDomain.domainId) {
+    //     return res(403, "The 'from' domain is not attached to this API key", {
+    //       domain: fromInfo.domain,
+    //     });
+    //   }
+    //   useFrom = fromInfo.name
+    //     ? `"${fromInfo.name}" <${fromInfo.email}>`
+    //     : fromInfo.email;
+    // }
     const messageId = `msg_${randomUUID()}`;
     await sqsClient.send(
       new SendMessageCommand({
