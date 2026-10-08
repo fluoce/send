@@ -27,7 +27,7 @@ export default function RootLayout({
         inter.variable
       )}
     >
-      <body>
+      <body suppressHydrationWarning>
         <Provider>{children}</Provider>
       </body>
     </html>
