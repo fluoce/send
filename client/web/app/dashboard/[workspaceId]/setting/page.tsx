@@ -21,7 +21,7 @@ import {
   WorkspaceStatusType,
 } from "@/types/data/workspace-data"
 import { cn } from "cn"
-import { Edit } from "lucide-react"
+import { Edit, Settings } from "lucide-react"
 
 export default function SettingPage() {
   const workspaceId = useWorkspaceId()
@@ -41,6 +41,7 @@ export default function SettingPage() {
   return workspace ? (
     <PageWrapper>
       <PageHeader
+        icon={<Settings />}
         title="Workspace"
         description={`Manage settings for your workspace.`}
       />

@@ -11,7 +11,7 @@ import { Nodata } from "@/components/ui/no-data"
 import { externalRoute } from "@/const/route"
 import { useApiKeys } from "@/hooks/use-api-key"
 import { useWorkspaceId } from "@/hooks/use-workspace-id"
-import { ArrowUpRight, Key, Plus, RotateCcw } from "lucide-react"
+import { ArrowUpRight, Key, KeyIcon, Plus, RotateCcw } from "lucide-react"
 import Link from "next/link"
 
 export default function ApikeyPage() {
@@ -29,6 +29,7 @@ export default function ApikeyPage() {
     <PageWrapper>
       <div className="flex items-center justify-between gap-4">
         <PageHeader
+          icon={<KeyIcon />}
           title="API Keys"
           description="Manage your workspace's API keys."
         />

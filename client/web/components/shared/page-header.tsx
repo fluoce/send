@@ -15,19 +15,25 @@ export function PageHeader({
 }) {
   return (
     <div className="flex w-full items-start justify-between gap-6">
-      <div className="flex flex-col">
-        <div className="flex items-center gap-2 text-lg font-medium opacity-80 sm:text-xl">
-          {icon}
-          <h1 title={title}>{title}</h1>
-        </div>
-        {description && (
-          <span
-            title={description}
-            className="line-clamp-2 text-xs text-muted-foreground sm:text-sm"
-          >
-            {description}
-          </span>
+      <div className="flex items-center gap-2">
+        {icon && (
+          <div className="rounded-md bg-muted p-2">
+            <div className="opacity-70">{icon}</div>
+          </div>
         )}
+        <div className="flex flex-col">
+          <h3 className="font-medium opacity-80" title={title}>
+            {title}
+          </h3>
+          {description && (
+            <span
+              title={description}
+              className="line-clamp-2 text-xs text-muted-foreground"
+            >
+              {description}
+            </span>
+          )}
+        </div>
       </div>
       {children}
     </div>

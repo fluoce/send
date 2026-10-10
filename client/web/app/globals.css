@@ -7,6 +7,24 @@
 
 @custom-variant dark (&:is(.dark *));
 
+::-webkit-scrollbar {
+  width: 0.25rem;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--tt-scrollbar-color) transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--tt-scrollbar-color);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 .smooth {
   transition: all 0.2s ease-in;
 }

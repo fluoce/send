@@ -7,6 +7,7 @@ import { ArrowLeft, RotateCcw } from "lucide-react"
 import Link from "next/link"
 import { UpdateTemplateStatus } from "./update-template-status"
 import { useTemplateEditor } from "@/context/template-editor-context"
+import { WidthTypeBtn } from "@/components/shared/width-type-btn"
 
 export function TemplateEditorTopbar() {
   const { template, refetchTemplate, isRefetching } = useTemplateEditor()
@@ -36,6 +37,7 @@ export function TemplateEditorTopbar() {
           >
             <RotateCcw className={isRefetching ? "animate-spin" : undefined} />
           </Button>
+          <WidthTypeBtn />
           <UpdateTemplateStatus disabled={isRefetching} template={template} />
         </div>
       ) : null}

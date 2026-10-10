@@ -29,6 +29,7 @@ export default function TemplatePage() {
     <PageWrapper>
       <div className="flex items-center justify-between gap-4">
         <PageHeader
+          icon={<Form />}
           title="Templates"
           description="Manage your workspace's Templates."
         />

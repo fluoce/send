@@ -8,6 +8,15 @@ export const dashboardRoute = {
     `${base}/${workspaceId}/upgrade`,
   workspace: ({ workspaceId }: { workspaceId: string }) =>
     `${base}/${workspaceId}`,
+  message: ({ workspaceId }: { workspaceId: string }) =>
+    `${base}/${workspaceId}/message`,
+  messageDetails: ({
+    workspaceId,
+    messageId,
+  }: {
+    workspaceId: string
+    messageId: string
+  }) => `${base}/${workspaceId}/message/${messageId}`,
   workspaceSetting: ({ worksapceId }: { worksapceId: string }) =>
     `${base}/${worksapceId}/setting`,
   apiKey: ({ workspaceId }: { workspaceId: string }) =>

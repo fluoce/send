@@ -4,10 +4,11 @@ import { dashboardRoute, externalRoute } from "@/const/route"
 import { NavUser } from "./nav-user"
 import { SelectWorkspace } from "../shared/select-workspace"
 import { AppMenu } from "./app-menu"
+import { WidthTypeBtn } from "../shared/width-type-btn"
 
 export function AppTopbar() {
   return (
-    <nav className="sticky top-0 z-20 flex flex-col bg-sidebar">
+    <nav className="sticky top-0 z-20 flex flex-col bg-background dark:bg-sidebar">
       <div className="flex items-center justify-between gap-2 px-2 py-3">
         <div className="flex flex-wrap items-start">
           <a href={dashboardRoute.base} className="flex items-center gap-1">
@@ -29,6 +30,7 @@ export function AppTopbar() {
         </div>
         <div className="flex items-center gap-2">
           <SelectWorkspace />
+          <WidthTypeBtn />
           <NavUser />
         </div>
       </div>

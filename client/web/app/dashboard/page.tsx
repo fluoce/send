@@ -6,9 +6,9 @@ import { localStorageKey } from "@/const/local-storage-key"
 import { dashboardRoute } from "@/const/route"
 import useLocalStorage from "@/hooks/use-local-storage"
 import { useWorkspaces } from "@/hooks/use-workspace"
-import { ArrowUpRight, RotateCcw } from "lucide-react"
+import { RotateCcw } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 
 export default function WorkspaceCheck() {
   const router = useRouter()

@@ -76,3 +76,16 @@ export interface Template {
   createdAt: string | Date;
   updatedAt: string | Date;
 }
+
+export interface Message {
+  id: string;
+  workspaceId: string;
+  apiKeyId: string;
+  status: 'DELIVERED' | 'FAILED' | 'PENDING';
+  type: 'EMAIL' | 'SMS';
+  from: string;
+  to: string[];
+  content: string;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+}

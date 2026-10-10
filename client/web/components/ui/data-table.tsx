@@ -19,11 +19,13 @@ import {
 interface DataTableProps<TData extends RowData> {
   columns: ColumnDef<DataTableFeatures, TData>[]
   data: TData[]
+  emptyMessage?: string
 }
 
 export function DataTable<TData extends RowData>({
   columns,
   data,
+  emptyMessage,
 }: DataTableProps<TData>) {
   const table = useTable({
     features,
@@ -69,7 +71,7 @@ export function DataTable<TData extends RowData>({
           ) : (
             <TableRow>
               <TableCell colSpan={columns.length} className="h-24 text-center">
-                No results.
+                {emptyMessage ? emptyMessage : "No results."}
               </TableCell>
             </TableRow>
           )}

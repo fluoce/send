@@ -9,6 +9,7 @@ import {
   Globe,
   Key,
   LayoutDashboard,
+  Send,
   Sparkle,
 } from "lucide-react"
 import { Button } from "../ui/button"
@@ -24,6 +25,13 @@ export function AppMenu() {
       name: "Dashboard",
       icon: <LayoutDashboard />,
       path: dashboardRoute.workspace({
+        workspaceId,
+      }),
+    },
+    {
+      name: "Messages",
+      icon: <Send />,
+      path: dashboardRoute.message({
         workspaceId,
       }),
     },
@@ -51,7 +59,7 @@ export function AppMenu() {
   ]
 
   return (
-    <div className="custom-scroll flex h-full w-full items-center justify-between gap-8 overflow-x-auto px-2 py-1 text-muted-foreground">
+    <div className="custom-scroll flex h-full w-full items-center justify-between gap-8 overflow-x-auto px-2 pb-1 text-muted-foreground">
       <div className="flex items-center gap-2">
         {Menu.map((m) => (
           <Link key={m.name} tabIndex={-1} href={m.path}>

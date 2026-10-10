@@ -117,3 +117,11 @@ export const templateEndpoint = {
     templateId: string
   }) => `${templateBase({ workspaceId })}/${templateId}`,
 }
+
+const dashboardBase = ({ workspaceId }: { workspaceId: string }) =>
+  `/workspace/${workspaceId}/dashboard`
+
+export const dashboardEndpoint = {
+  get: ({ workspaceId }: { workspaceId: string }) =>
+    `${dashboardBase({ workspaceId })}`,
+}

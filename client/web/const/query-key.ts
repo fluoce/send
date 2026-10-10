@@ -38,3 +38,10 @@ export const templateQueryKey = {
     `${templateId}`,
   ],
 }
+
+export const dashboardQueryKey = {
+  dashboard: ({ workspaceId }: { workspaceId: string }) => [
+    "dashboard",
+    `${workspaceId}`,
+  ],
+}

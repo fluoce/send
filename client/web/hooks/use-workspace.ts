@@ -15,6 +15,7 @@ import useLocalStorage from "./use-local-storage"
 import { localStorageKey } from "@/const/local-storage-key"
 import { useRouter } from "next/navigation"
 import { dashboardRoute } from "@/const/route"
+import { useFluoceAuth } from "@fluoce/auth-react"
 
 export function useWorkspace({ workspaceId }: { workspaceId: string }) {
   const f = useFetch()
@@ -33,6 +34,7 @@ export function useWorkspace({ workspaceId }: { workspaceId: string }) {
 }
 
 export function useWorkspaces() {
+  const { user } = useFluoceAuth()
   const f = useFetch()
   return useQuery<ResType<WorkspacesDataType>>({
     queryKey: workspaceQueryKey.workspaces,
@@ -41,6 +43,7 @@ export function useWorkspaces() {
         endpoint: workspaceEndpoint.getAll,
         method: "GET",
       }),
+    enabled: Boolean(user),
   })
 }
 

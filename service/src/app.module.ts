@@ -10,6 +10,7 @@ import { DatabaseModule } from './database/database.module';
 import { WorkspaceModule } from './module/workspace/workspace.module';
 import { DomainModule } from './module/domain/domain.module';
 import { TemplateModule } from './module/template/template.module';
+import { DashboardModule } from './module/dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { TemplateModule } from './module/template/template.module';
     ApiKeyModule,
     DomainModule,
     TemplateModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [
