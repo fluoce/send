@@ -58,6 +58,8 @@ import "@/components/tiptap-templates/simple/simple-editor.scss"
 import Placeholder from "@tiptap/extension-placeholder"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { useOnCtrlS } from "@/hooks/use-on-ctrl-s"
+import { useIsWidthLess } from "@/hooks/use-is-width-less"
+import { cn } from "cn"
 
 const SEARCH_AND_REPLACE_SCROLL_OPTIONS: ScrollIntoViewOptions = {
   block: "center",
@@ -177,6 +179,10 @@ export function SimpleEditor({
   saveNow: (html: string) => void
 }) {
   const isMobile = useIsBreakpoint()
+
+  const isLessWidth = useIsWidthLess({
+    size: 480,
+  })
 
   const [mobileView, setMobileView] = useState<"main" | "highlighter" | "link">(
     "main"
@@ -305,7 +311,7 @@ export function SimpleEditor({
         <EditorContent
           editor={editor}
           role="presentation"
-          className="simple-editor-content"
+          className={cn("simple-editor-content", isLessWidth && "mt-12!")}
         />
       </EditorContext.Provider>
     </div>

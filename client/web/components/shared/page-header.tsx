@@ -22,13 +22,13 @@ export function PageHeader({
           </div>
         )}
         <div className="flex flex-col">
-          <h3 className="font-medium opacity-80" title={title}>
+          <h3 className="line-clamp-1 font-medium opacity-80" title={title}>
             {title}
           </h3>
           {description && (
             <span
               title={description}
-              className="line-clamp-2 text-xs text-muted-foreground"
+              className="line-clamp-1 text-xs text-muted-foreground"
             >
               {description}
             </span>
