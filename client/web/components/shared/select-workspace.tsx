@@ -19,6 +19,7 @@ import { Skeleton } from "../ui/skeleton"
 import { ReactNode } from "react"
 import { CreateUpdateWorkspace } from "../form/create-update-workspace"
 import { Badge } from "../ui/badge"
+import { funcTrunc } from "@/func/func-trunc"
 
 export function SelectWorkspace({
   children,
@@ -54,7 +55,9 @@ export function SelectWorkspace({
             variant="secondary"
             size="lg"
           >
-            <span className="truncate">{selectedWorkspace?.name}</span>
+            <span className="truncate">
+              {funcTrunc(selectedWorkspace?.name!)}
+            </span>
             <ChevronDown />
           </Button>
         )}
