@@ -92,6 +92,8 @@ export const MessageColumns = columnHelper.columns([
         colorClass = "text-red-500"
       } else if (status === "DELIVERED") {
         colorClass = "text-green-500"
+      } else if (status === "SENT") {
+        colorClass = "text-blue-500"
       }
       return <span className={colorClass}>{status}</span>
     },

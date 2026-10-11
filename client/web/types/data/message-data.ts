@@ -1,4 +1,4 @@
-export type MessageStatusType = "DELIVERED" | "FAILED" | "PENDING"
+export type MessageStatusType = "DELIVERED" | "FAILED" | "PENDING" | "SENT"
 
 export type MessageTypeType = "EMAIL" | "SMS"
 

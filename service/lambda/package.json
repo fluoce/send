@@ -1,0 +1,14 @@
+{
+  "name": "lambda",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "email-build": "esbuild func/email/send-email.ts --bundle --platform=node --target=node24 --format=esm --outfile=dist/email/send-email.mjs --packages=bundle --minify --external:@aws-sdk/*",
+    "sms-build": "esbuild func/sms/send-sms.ts --bundle --platform=node --target=node24 --format=esm --outfile=dist/sms/send-sms.mjs --packages=bundle --minify --external:@aws-sdk/*"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.33.2"
+}

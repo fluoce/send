@@ -8,6 +8,7 @@ export const tableName = {
   domain: 'send_domain',
   verifiedDomain: 'send_verified_domain',
   template: 'send_template',
+  message: 'send_message',
 };
 
 export interface Workspace {
@@ -81,11 +82,13 @@ export interface Message {
   id: string;
   workspaceId: string;
   apiKeyId: string;
-  status: 'DELIVERED' | 'FAILED' | 'PENDING';
+  serviceId: string;
+  status: 'DELIVERED' | 'FAILED' | 'PENDING' | 'SENT';
   type: 'EMAIL' | 'SMS';
   from: string;
   to: string[];
   content: string;
+  errorMessage: string;
   createdAt: string | Date;
   updatedAt: string | Date;
 }

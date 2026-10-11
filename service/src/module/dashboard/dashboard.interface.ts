@@ -63,6 +63,7 @@ export interface DashboardControllerInterface {
  *       DELIVERED: 120,
  *       FAILED: 20,
  *       PENDING: 10
+ *       SENT: 6
  *     }
  *   },
  *   {
