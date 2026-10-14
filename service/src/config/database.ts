@@ -87,7 +87,9 @@ export interface Message {
   type: 'EMAIL' | 'SMS';
   from: string;
   to: string[];
-  content: string;
+  subject: string;
+  html: string;
+  text: string;
   errorMessage: string;
   createdAt: string | Date;
   updatedAt: string | Date;
