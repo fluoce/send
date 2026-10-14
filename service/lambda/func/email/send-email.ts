@@ -45,6 +45,7 @@ export const handler = async (
     headers: event?.headers,
     name: sendApiKeyHeaderName,
   });
+  // check for send limits
   const body =
     typeof event?.body === 'object'
       ? event.body
@@ -86,6 +87,11 @@ export const handler = async (
           message: `API key is not Active ( status: ${apiKey?.status})  `,
         });
       }
+      // check workspace status
+      // validate body
+      // verify domain if form exist in body
+      // set sqs event
+      // write info in db with pending status
       return res({
         status: 202,
         data: {
