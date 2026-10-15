@@ -11,7 +11,6 @@ import {
 } from '@aws-sdk/lib-dynamodb';
 import { SQSClient, SendMessageCommand } from '@aws-sdk/client-sqs';
 import { checkEnv } from '../../utils/check-env';
-import { res } from '../../utils/res';
 import { tryCatch } from '../../utils/try-catch';
 import { getHeader } from '../../utils/get-header';
 import { sendApiKeyHeaderName } from '../../utils/const';
@@ -21,6 +20,7 @@ import { emailRegex } from 'src/config/regex';
 import { parseFromAddress } from 'lambda/utils/parse-from-address';
 import { parseBody } from 'lambda/utils/parse-body';
 import { checkMaxLength } from 'lambda/utils/check-max-length';
+import { res } from '../../utils/res';
 
 const {
   REGION,
@@ -103,19 +103,30 @@ export const handler = async (
           message: `API key is not Active ( status: ${apiKey?.status})`,
         });
       }
+
       const workspaceRecord = await db.send(
-        new GetCommand({
+        new QueryCommand({
           TableName: WORKSPACE_TABLE_NAME,
-          Key: {
-            id: apiKey.workspaceId,
+          IndexName: 'idIndex',
+          KeyConditionExpression: '#id = :id',
+          ExpressionAttributeNames: {
+            '#id': 'id',
           },
+          ExpressionAttributeValues: {
+            ':id': apiKey.workspaceId,
+          },
+          Limit: 1,
         }),
       );
-      const workspace = workspaceRecord?.Item as Workspace;
-      if (workspace?.status !== 'ACTIVE') {
+
+      const workspace = workspaceRecord.Items?.[0] as Workspace | undefined;
+
+      if (!workspace || workspace.status !== 'ACTIVE') {
         return res({
           status: 403,
-          message: `Workspace is not Active ( status: ${workspace?.status})`,
+          message: !workspace
+            ? 'Workspace not found or inactive'
+            : `Workspace is not Active ( status: ${workspace.status})`,
         });
       }
 
@@ -137,8 +148,8 @@ export const handler = async (
           new QueryCommand({
             TableName: VERIFIED_DOMAIN_TABLE_NAME,
             IndexName: VERIFIED_DOMAIN_TABLE_INDEX_NAME,
-            KeyConditionExpression:
-              '#domain = :domain AND #workspaceId = :workspaceId',
+            KeyConditionExpression: '#domain = :domain',
+            FilterExpression: '#workspaceId = :workspaceId',
             ExpressionAttributeNames: {
               '#domain': 'domain',
               '#workspaceId': 'workspaceId',
@@ -147,7 +158,6 @@ export const handler = async (
               ':domain': parsedFrom.domain,
               ':workspaceId': workspace.id,
             },
-            Limit: 1,
           }),
         );
         if (!domainRecord?.Items || domainRecord.Items.length === 0) {
@@ -163,7 +173,6 @@ export const handler = async (
         const domain = domainRecord.Items[0] as Domain;
         if (
           domain.workspaceId !== workspace.id ||
-          domain.domain !== parsedFrom.domain ||
           domain.status !== 'VERIFIED'
         ) {
           return res({

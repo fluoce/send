@@ -21,7 +21,6 @@ import {
 import { ApiKey, database, tableName } from 'src/config/database';
 import { UlidService } from 'src/lib/ulid/ulid.service';
 import {
-  ApiKeyDto,
   AttachDomainWithApiKeyDto,
   CreateApiKeyDto,
   DeleteApiKeyDto,

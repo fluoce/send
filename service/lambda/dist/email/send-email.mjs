@@ -1,11 +1,10 @@
-import { DynamoDBClient as q } from '@aws-sdk/client-dynamodb';
+import { DynamoDBClient as X } from '@aws-sdk/client-dynamodb';
 import {
-  DynamoDBDocumentClient as W,
-  GetCommand as H,
-  PutCommand as Q,
-  QueryCommand as S,
+  DynamoDBDocumentClient as q,
+  PutCommand as H,
+  QueryCommand as N,
 } from '@aws-sdk/lib-dynamodb';
-import { SQSClient as J, SendMessageCommand as z } from '@aws-sdk/client-sqs';
+import { SQSClient as Q, SendMessageCommand as J } from '@aws-sdk/client-sqs';
 function R({ envs: e }) {
   let t = e.filter((r) => !process.env[r]);
   if (t?.length > 0)
@@ -33,19 +32,19 @@ async function D({ fn: e, errorMessage: t = 'Internal server error' }) {
     );
   }
 }
-function x({ headers: e, name: t }) {
+function M({ headers: e, name: t }) {
   if (!e) return;
   let r = Object.keys(e).find((s) => s.toLowerCase() === t.toLowerCase());
   return (r && e[r]?.trim()) || void 0;
 }
-var M = 'send-api-key';
+var T = 'send-api-key';
 import p from 'node:crypto';
-var k = '0123456789ABCDEFGHJKMNPQRSTVWXYZ',
+var v = '0123456789ABCDEFGHJKMNPQRSTVWXYZ',
   g = 32;
-var F = 16,
-  v = 10,
-  T = 0xffffffffffff;
-var d;
+var B = 16,
+  C = 10,
+  k = 0xffffffffffff;
+var m;
 (function (e) {
   ((e.Base32IncorrectEncoding = 'B32_ENC_INVALID'),
     (e.DecodeTimeInvalidCharacter = 'DEC_TIME_CHAR'),
@@ -57,15 +56,15 @@ var d;
     (e.ULIDInvalid = 'ULID_INVALID'),
     (e.Unexpected = 'UNEXPECTED'),
     (e.UUIDInvalid = 'UUID_INVALID'));
-})(d || (d = {}));
-var m = class extends Error {
+})(m || (m = {}));
+var c = class extends Error {
   constructor(t, r) {
     (super(`${r} (${t})`), (this.name = 'ULIDError'), (this.code = t));
   }
 };
 function $(e) {
   let t = Math.floor(e() * g) % g;
-  return k.charAt(t);
+  return v.charAt(t);
 }
 function G(e) {
   let t = O(),
@@ -78,10 +77,10 @@ function G(e) {
   if (typeof r?.randomBytes == 'function')
     return () => r.randomBytes(1).readUInt8() / 256;
   if (p?.randomBytes) return () => p.randomBytes(1).readUInt8() / 256;
-  throw new m(d.PRNGDetectFailure, 'Failed to find a reliable PRNG');
+  throw new c(m.PRNGDetectFailure, 'Failed to find a reliable PRNG');
 }
 function O() {
-  return X()
+  return W()
     ? self
     : typeof window < 'u'
       ? window
@@ -96,36 +95,36 @@ function K(e, t) {
   for (; e > 0; e--) r = $(t) + r;
   return r;
 }
-function j(e, t = v) {
+function j(e, t = C) {
   if (isNaN(e))
-    throw new m(d.EncodeTimeValueMalformed, `Time must be a number: ${e}`);
-  if (e > T)
-    throw new m(
-      d.EncodeTimeSizeExceeded,
-      `Cannot encode a time larger than ${T}: ${e}`,
+    throw new c(m.EncodeTimeValueMalformed, `Time must be a number: ${e}`);
+  if (e > k)
+    throw new c(
+      m.EncodeTimeSizeExceeded,
+      `Cannot encode a time larger than ${k}: ${e}`,
     );
-  if (e < 0) throw new m(d.EncodeTimeNegative, `Time must be positive: ${e}`);
+  if (e < 0) throw new c(m.EncodeTimeNegative, `Time must be positive: ${e}`);
   if (Number.isInteger(e) === !1)
-    throw new m(d.EncodeTimeValueMalformed, `Time must be an integer: ${e}`);
+    throw new c(m.EncodeTimeValueMalformed, `Time must be an integer: ${e}`);
   let r,
     s = '';
   for (let n = t; n > 0; n--)
-    ((r = e % g), (s = k.charAt(r) + s), (e = (e - r) / g));
+    ((r = e % g), (s = v.charAt(r) + s), (e = (e - r) / g));
   return s;
 }
-function X() {
+function W() {
   return typeof WorkerGlobalScope < 'u' && self instanceof WorkerGlobalScope;
 }
 function L(e, t) {
   let r = t || G(),
     s = !e || isNaN(e) ? Date.now() : e;
-  return j(s, v) + K(F, r);
+  return j(s, C) + K(B, r);
 }
-function C({ prefix: e }) {
+function P({ prefix: e }) {
   return `${e}_${L()}`;
 }
 var E = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-function P({ from: e }) {
+function U({ from: e }) {
   if (typeof e != 'string' || /[\r\n]/.test(e))
     throw new Error(
       'From address must be a string and must not contain linebreaks',
@@ -151,7 +150,7 @@ function P({ from: e }) {
     throw new Error('Email address missing domain part');
   return { name: s, email: n, domain: n.split('@')[1] };
 }
-function U({ body: e }) {
+function S({ body: e }) {
   if (typeof e != 'string' || !e)
     throw new Error('Request body is missing or not a string');
   let t;
@@ -172,14 +171,14 @@ function I({ field: e, maxLength: t }) {
 }
 var {
     REGION: V,
-    API_KEY_TABLE_NAME: Y,
-    API_KEY_TABLE_INDEX_NAME: ee,
-    WORKSPACE_TABLE_NAME: te,
-    VERIFIED_DOMAIN_TABLE_NAME: re,
-    VERIFIED_DOMAIN_TABLE_INDEX_NAME: ne,
-    SEND_FROM: se,
-    SQS_EMAIL_QUEUE_URL: oe,
-    MESSAGE_TABLE_NAME: ie,
+    API_KEY_TABLE_NAME: z,
+    API_KEY_TABLE_INDEX_NAME: Y,
+    WORKSPACE_TABLE_NAME: ee,
+    VERIFIED_DOMAIN_TABLE_NAME: te,
+    VERIFIED_DOMAIN_TABLE_INDEX_NAME: re,
+    SEND_FROM: ne,
+    SQS_EMAIL_QUEUE_URL: se,
+    MESSAGE_TABLE_NAME: oe,
   } = R({
     envs: [
       'REGION',
@@ -193,20 +192,20 @@ var {
       'MESSAGE_TABLE_NAME',
     ],
   }),
-  y = W.from(new q({ region: V })),
-  ae = new J({ region: V }),
+  y = q.from(new X({ region: V })),
+  ie = new Q({ region: V }),
   Ze = async (e) => {
-    let t = x({ headers: e?.headers, name: M });
+    let t = M({ headers: e?.headers, name: T });
     if (!t) return o({ status: 401, message: 'API Key is missing' });
-    let r = U({ body: e?.body });
+    let r = S({ body: e?.body });
     return r
       ? D({
           fn: async () => {
             let n = (
               await y.send(
-                new S({
-                  TableName: Y,
-                  IndexName: ee,
+                new N({
+                  TableName: z,
+                  IndexName: Y,
                   KeyConditionExpression: '#k = :k',
                   ExpressionAttributeNames: { '#k': 'key' },
                   ExpressionAttributeValues: { ':k': t },
@@ -220,18 +219,29 @@ var {
                 status: 403,
                 message: `API key is not Active ( status: ${n?.status})`,
               });
-            let c = (
-              await y.send(new H({ TableName: te, Key: { id: n.workspaceId } }))
-            )?.Item;
-            if (c?.status !== 'ACTIVE')
+            let a = (
+              await y.send(
+                new N({
+                  TableName: ee,
+                  IndexName: 'idIndex',
+                  KeyConditionExpression: '#id = :id',
+                  ExpressionAttributeNames: { '#id': 'id' },
+                  ExpressionAttributeValues: { ':id': n.workspaceId },
+                  Limit: 1,
+                }),
+              )
+            ).Items?.[0];
+            if (!a || a.status !== 'ACTIVE')
               return o({
                 status: 403,
-                message: `Workspace is not Active ( status: ${c?.status})`,
+                message: a
+                  ? `Workspace is not Active ( status: ${a.status})`
+                  : 'Workspace not found or inactive',
               });
-            let { from: l, to: a, subject: u, html: f } = r,
-              A = se;
+            let { from: l, to: d, subject: u, html: f } = r,
+              A = ne;
             if (l) {
-              let i = P({ from: l });
+              let i = U({ from: l });
               if (!i)
                 return o({
                   status: 400,
@@ -239,20 +249,19 @@ var {
                   data: { from: l },
                 });
               let h = await y.send(
-                new S({
-                  TableName: re,
-                  IndexName: ne,
-                  KeyConditionExpression:
-                    '#domain = :domain AND #workspaceId = :workspaceId',
+                new N({
+                  TableName: te,
+                  IndexName: re,
+                  KeyConditionExpression: '#domain = :domain',
+                  FilterExpression: '#workspaceId = :workspaceId',
                   ExpressionAttributeNames: {
                     '#domain': 'domain',
                     '#workspaceId': 'workspaceId',
                   },
                   ExpressionAttributeValues: {
                     ':domain': i.domain,
-                    ':workspaceId': c.id,
+                    ':workspaceId': a.id,
                   },
-                  Limit: 1,
                 }),
               );
               if (!h?.Items || h.Items.length === 0)
@@ -261,30 +270,26 @@ var {
                   message: "'from' domain is not allowed for this workspace",
                   data: { from: l, domain: i.domain },
                 });
-              let N = h.Items[0];
-              if (
-                N.workspaceId !== c.id ||
-                N.domain !== i.domain ||
-                N.status !== 'VERIFIED'
-              )
+              let x = h.Items[0];
+              if (x.workspaceId !== a.id || x.status !== 'VERIFIED')
                 return o({
                   status: 403,
                   message: 'Sender domain is not verified for this workspace',
                 });
               A = i.name ? `${i.name} <${i.email}>` : i.email;
             }
-            if (!Array.isArray(a) || a.length === 0)
+            if (!Array.isArray(d) || d.length === 0)
               return o({
                 status: 400,
                 message: "'to' field is required and must be a non-empty array",
               });
-            if (a.length > 10)
+            if (d.length > 10)
               return o({
                 status: 400,
                 message: "'to' cannot exceed 10 recipients",
               });
             if (
-              !a.every(
+              !d.every(
                 (i) =>
                   typeof i == 'string' &&
                   E.test(i.trim()) &&
@@ -294,7 +299,7 @@ var {
               return o({
                 status: 400,
                 message: "'to' must contain only valid email addresses",
-                data: { to: a },
+                data: { to: d },
               });
             if (typeof u != 'string' || !u.trim())
               return o({
@@ -318,16 +323,16 @@ var {
                 status: 400,
                 message: "'html' field must not exceed 20000 characters",
               });
-            let w = C({ prefix: 'msg' }),
+            let w = P({ prefix: 'msg' }),
               Z = {
                 v: '1',
                 type: 'email',
                 messageId: w,
-                workspaceId: c.id,
+                workspaceId: a.id,
                 apiKeyId: n.id,
                 email: {
                   from: A,
-                  to: a.map((i) => i.trim()),
+                  to: d.map((i) => i.trim()),
                   subject: u.trim(),
                   html: f,
                 },
@@ -335,21 +340,21 @@ var {
               },
               b =
                 (
-                  await ae.send(
-                    new z({ QueueUrl: oe, MessageBody: JSON.stringify(Z) }),
+                  await ie.send(
+                    new J({ QueueUrl: se, MessageBody: JSON.stringify(Z) }),
                   )
                 )?.MessageId || null;
             if (!b) return o({ status: 500, message: 'Failed to queue email' });
             let _ = new Date().toISOString(),
-              B = {
+              F = {
                 id: w,
-                workspaceId: c.id,
+                workspaceId: a.id,
                 apiKeyId: n.id,
                 serviceId: b,
                 status: 'PENDING',
                 type: 'EMAIL',
                 from: A,
-                to: a.map((i) => i.trim()),
+                to: d.map((i) => i.trim()),
                 subject: u,
                 html: f,
                 errorMessage: '',
@@ -357,7 +362,7 @@ var {
                 updatedAt: _,
               };
             return (
-              await y.send(new Q({ TableName: ie, Item: B })),
+              await y.send(new H({ TableName: oe, Item: F })),
               o({
                 status: 202,
                 message: 'Email in queue',
